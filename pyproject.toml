@@ -1,0 +1,9 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Browser verification tools for the Toyota Go static web app"
+requires-python = ">=3.13"
+dependencies = [
+    "playwright>=1.64.1",
+]
+

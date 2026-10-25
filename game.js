@@ -106,7 +106,7 @@ function illustrativeApr() {
 function monthlyPayment(car, plan) {
   if (plan.id === "cash") return 0;
   if (plan.id === "lease") return car.price * 0.0061;
-  const principal = Math.max(0, car.price - upfrontCost(car, plan));
+  const principal = Math.max(0, car.price - Math.min(car.price, state.profile.downPayment));
   const rate = illustrativeApr() / 12;
   return principal * rate / (1 - Math.pow(1 + rate, -plan.months));
 }
@@ -261,6 +261,7 @@ function renderSetup() {
     `Estimated payment · ${(illustrativeApr() * 100).toFixed(1)}% example APR · 60 months`;
   document.querySelector("#annual-mile-value").textContent = `${state.profile.annualMiles.toLocaleString("en-US")} mi / yr`;
   document.querySelector("#fit-copy").textContent = `${state.car.fit} ${state.profile.awd && state.car.awd ? "Matches your interest in available AWD." : ""}`;
+  renderDealInsights();
 }
 
 function syncShowAll() {
@@ -341,6 +342,7 @@ function readNeedsForm() {
     : "No exact matches · adjust your budget or payment limit";
   syncShowAll();
   if (state.matches.length) renderSetup();
+  else document.querySelector("#deal-insights").innerHTML = '<p class="insight-empty">Adjust your filters to find a vehicle before calculating a Deal Benefit Score.</p>';
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -828,7 +830,7 @@ function threeYearCost(car, plan) {
   let balance = 0;
   if (plan.id === "loan") {
     const rate = illustrativeApr() / 12;
-    const principal = car.price - upfrontCost(car, plan);
+    const principal = Math.max(0, car.price - Math.min(car.price, state.profile.downPayment));
     const payment = monthlyPayment(car, plan);
     balance = principal * Math.pow(1 + rate, 36) - payment * (Math.pow(1 + rate, 36) - 1) / rate;
   }
@@ -908,6 +910,11 @@ function compareRows() {
     ["Seats", (c) => String(c.seats), (c) => c.seats, "max"],
     ["Body style", (c) => BODY_LABEL[c.body] || c.body],
     ["Safety", (c) => c.safety],
+    ["Illustrative Deal Benefit Score", (c) => `${DealModel.evaluate(c, bestPlan(c), state.profile, dealScenario(), illustrativeApr()).score}%`],
+    ["Illustrative 5-year resale value", (c) => dollars(DealModel.retained(c.price, dealScenario().toyotaRetention, 5))],
+    ["Assumed assist-feature coverage (not crash safety)", () => `${dealScenario().toyotaSafety}%`],
+    ["Modeled tailpipe CO₂ / year (not lifecycle)", (c) => `${Math.round(DealModel.emissions(c, p.annualMiles)).toLocaleString()} kg`],
+    ["Assumed annual maintenance", () => dollars(dealScenario().toyotaMaintenance)],
     ["Your requirements met", (c) => requirementChips(c, plan(c)).map((t) => `✓ ${t}`).join("<br>")],
     ["Official page", (c) => `<a href="${c.url}" target="_blank" rel="noopener noreferrer">${c.url.replace("https://www.", "")} ↗</a>`],
   ];
@@ -1013,7 +1020,7 @@ function setAuthMode(mode) {
   document.querySelector("#account-name").required = isSignup;
   document.querySelector("#account-password").autocomplete = isSignup ? "new-password" : "current-password";
   document.querySelector("#auth-submit-label").textContent = isSignup ? "Create my account" : "Sign in";
-  document.querySelector("#auth-title").innerHTML = isSignup ? "Let's find a Toyota<br>that <em>fits.</em>" : "Welcome back to<br><em>Toyota Match.</em>";
+  document.querySelector("#auth-title").innerHTML = isSignup ? "Let's find a Toyota<br>that <em>fits.</em>" : "Welcome back to<br><em>Toyota Go.</em>";
 }
 
 function resetGame() {
@@ -1035,6 +1042,7 @@ function resetGame() {
   state.fuelCosts = 0;
   state.score = 0;
   state.compare = [];
+  resetDealScenario();
   document.querySelector("#auth-form").reset();
   document.querySelector("#needs-form").reset();
   setAuthMode("signup");

@@ -1,0 +1,1 @@
+- [Toyota Go scope](toyota-go-scope.md) — user branding requirements and permission for explicitly illustrative comparison metrics.

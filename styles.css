@@ -434,3 +434,198 @@ footer { font-size: 12px; } footer span:first-child { font-size: 13px; }
 .compare-table td.best { background: #e3f0cf; font-weight: 700; }
 .best-tag { font-size: 10px; letter-spacing: .06em; color: #244d38; }
 #compare-status { margin: 0 8px; font-weight: 600; color: #244d38; }
+
+/* Toyota Go · confident red, warm paper, practical guidance */
+:root {
+  --ink: #302b2a;
+  --muted: #766e6a;
+  --paper: #f7f4f0;
+  --line: #e8ded8;
+  --green: #d71920;
+  --lime: #fff0ed;
+  --orange: #b8242b;
+  color-scheme: light;
+}
+body { background: var(--paper); color: var(--ink); }
+h1, h2, h3 { color: var(--ink); }
+h1 em { color: #c32128; }
+.topbar {
+  min-height: 66px; height: auto; color: #fff; background: #c9141d;
+  border: 0; box-shadow: 0 3px 14px #65151b1c;
+}
+.topbar .brand { color: #fff; font-size: 20px; letter-spacing: -.55px; }
+.brand-mark { display: none; }
+.brand-logo { display: block; width: 42px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
+.top-note, .reset-button { color: #fff; }
+.top-note { font-size: 11px; letter-spacing: 1px; }
+.live-dot { background: #ffd9d4; box-shadow: 0 0 0 3px #ffffff28; }
+.reset-button { color: #fff; border: 1px solid #ffffff70; border-radius: 4px; padding: 8px 12px; }
+.reset-button:hover { color: #fff; background: #ffffff1c; text-decoration: none; }
+.skip-link { background: #a90e17; }
+.eyebrow, .car-tag, .meta-icon, .optional-label, .needs-card legend span { color: #b82129; }
+.step.active > span { background: #c9141d; }
+.step.done, .step.done > span { color: #a62c31; }
+.car-card:hover, .plan-card:not(:disabled):hover { border-color: #d79292; }
+.car-card.selected, .plan-card.selected { border-color: #c9141d; box-shadow: 0 0 0 1px #c9141d; background: #fff8f6; }
+.car-card.selected { box-shadow: 0 0 0 2px #c9141d, 0 10px 26px #74302b14; }
+.car-facts span { color: #8c3a3b; background: #f8e9e6; }
+.official-link, .text-button, .intro-edit-button { color: #a92027; }
+.plan-title-row span, .plan-cost { color: #a52b31 !important; }
+.primary-button { background: #c9141d; }
+.primary-button:hover { background: #a90e17; }
+.primary-button span { color: #ffe2de; }
+.money-panel { background: #f8efeb; }
+.money-top, .fit-label { color: #8a4b49; }
+.budget-icon { color: #c2242b; }
+.fit-dot { background: #c9141d; }
+.estimate-row strong { color: #413333; }
+.fit-copy { color: #624f4c; }
+.drive-status { background: #f8e9e5; }
+.drive-status span { color: #91504c; }
+.progress-track i { background: #c9141d; }
+.choice-button:hover { border-color: #c77c7f; background: #fff8f6; }
+.choice-result, .whatif-savings { color: #9b282d; }
+.ending-badge { color: #92252b; background: #f7e6e3; }
+.what-if { background: #fbf1ed; }
+.whatif-savings { border-color: #ead7d1; }
+.auth-shell, .needs-shell, .game-shell, .drive-shell, .ending-shell {
+  border-color: #e7dcd6; background-color: #fffdfa; box-shadow: 0 14px 45px #5c2d2510;
+}
+.auth-art { display: flex; align-items: end; min-height: 570px; background: #5c1c20; }
+.auth-art > :not(.auth-brand-story):not(.auth-building-photo) { display: none !important; }
+.auth-building-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 44% center; }
+.auth-art::after {
+  position: absolute; inset: 28% 0 0; content: "";
+  background: linear-gradient(180deg, transparent 0%, #25141430 30%, #281312e8 100%);
+  pointer-events: none;
+}
+.auth-brand-story { position: relative; z-index: 1; display: grid; gap: 12px; width: 100%; padding: 38px 42px 42px; color: #fff; }
+.auth-brand-story span { color: #ffded9; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; }
+.auth-brand-story strong { max-width: 460px; color: #fff; font-family: "Playfair Display", Georgia, serif; font-size: clamp(29px, 3.4vw, 44px); font-weight: 600; line-height: 1.12; }
+.auth-brand-story p { max-width: 390px; margin: 0; color: #fff3f0; font-size: 14px; line-height: 1.65; }
+.auth-brand .brand-logo { filter: none; width: 40px; height: 25px; }
+.auth-brand { color: #302b2a; }
+.auth-tab.active { color: #a92027; }
+.auth-tabs { background: #f6eeeb; }
+.form-field { color: #594c49; }
+.form-field input:focus, .form-field select:focus { outline-color: #e6a6a2; border-color: #c9141d; }
+.check-row input { accent-color: #c9141d; }
+.drive-game { border-color: #e3d0cb; }
+.drive-controls, .drive-instructions { background: #641b20; }
+.steer-button:active { background: #a9242b; }
+.pedal-button.accelerate { background: #c9141d; }
+.pedal-button.pressed { background: #a90e17; }
+.drive-overlay { background: #421619e8; }
+.drive-hud span { color: #563634; }
+.drive-hud #drive-alert { background: #c9141d; }
+footer { color: #817672; }
+footer span:first-child { color: #a92027; }
+.hero-art { background: #f2e5e1; }
+.hero-landscape > path:nth-child(1) { fill: #d3b9b4; }
+.hero-landscape > path:nth-child(2) { fill: #bb8580; }
+.hero-landscape > path:nth-child(3) { fill: #a65459; }
+.hero-landscape > path:nth-child(4) { fill: #78343a; }
+.hero-landscape > path:nth-child(5) { fill: #d5bda2; }
+.hero-landscape > path:nth-child(6) { stroke: #fff5ed; }
+.car-illustration { background: linear-gradient(140deg, #f5eeeb, #eaded9); }
+.car-card:nth-child(2) .car-illustration, .car-card:nth-child(4) .car-illustration { background: #f1e9e5; }
+.car-card:nth-child(3) .car-illustration { background: #efe7e1; }
+.req-facts span { background: #f7e8e4; color: #8e3538; }
+.ending-actions #save-status { color: #a92027; }
+.compare-toggle { border-color: #a92027; color: #a92027; }
+.compare-toggle.on { background: #a92027; color: #fff; }
+.compare-tray { background: #631b20; color: #fff2ef; }
+.compare-tray .text-button { color: #ffe3df; }
+.compare-dialog { background: #fffaf7; color: #302b2a; }
+.compare-dialog::backdrop { background: #4d171bcc; }
+.compare-table th, .compare-table td { border-color: #efe3de; }
+.compare-table tbody th { color: #9d252c; background: #fffaf7; }
+.compare-table td.best { background: #f8e6e1; }
+.best-tag, #compare-status { color: #a92027; }
+button:focus-visible, .car-card:focus-visible, .plan-card:focus-visible {
+  outline-color: #d35d62;
+}
+
+/* Educational ownership insights are inserted beneath the setup grid. */
+#deal-insights { margin: 0; padding: 30px clamp(18px, 3vw, 34px) 34px; border-top: 1px solid var(--line); background: #fcf8f5; }
+.insight-header { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+.insight-header h2 { font-size: clamp(23px, 3vw, 31px); }
+.insight-header p { max-width: 560px; margin: 8px 0 0; color: #766b67; font-size: 14px; line-height: 1.6; }
+.estimate-badge { display: inline-flex; align-items: center; gap: 7px; width: fit-content; padding: 8px 11px; border: 1px solid #edc7c1; border-radius: 999px; background: #fff4f1; color: #9e292e; font-size: 11px; font-weight: 750; white-space: nowrap; }
+.benefit-overview { display: grid; grid-template-columns: minmax(190px, .7fr) 1.3fr; gap: 18px; margin-bottom: 20px; }
+.benefit-score, .score-breakdown, .insight-card, .retention-summary, .insight-empty { border: 1px solid #eaded8; border-radius: 8px; background: #fffdfa; }
+.benefit-score { display: grid; align-content: center; justify-items: center; min-height: 168px; padding: 20px; text-align: center; background: #fbefeb; }
+.benefit-score > span:first-child { color: #9e5b55; font-size: 11px; font-weight: 800; letter-spacing: 1.3px; text-transform: uppercase; }
+.score-number { margin: 3px 0; color: #b51f27; font-size: clamp(38px, 5vw, 56px); font-weight: 800; letter-spacing: -2px; line-height: 1; }
+.benefit-score p { max-width: 230px; margin: 5px 0 0; color: #75645f; font-size: 12px; line-height: 1.5; }
+.score-breakdown { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; gap: 0 20px; padding: 18px 22px; }
+.score-breakdown h3 { grid-column: 1 / -1; margin: 0 0 9px; font-family: inherit; font-size: 15px; }
+.score-breakdown > div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid #f0e8e3; color: #756a66; font-size: 12px; }
+.score-breakdown strong { color: #403735; font-size: 13px; }
+.insight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.insight-card { min-width: 0; padding: 19px; }
+.insight-card h3 { margin: 0 0 6px; font-family: inherit; font-size: 16px; letter-spacing: -.2px; }
+.insight-card > p { margin: 0 0 15px; color: #7d716d; font-size: 12px; line-height: 1.55; }
+.insight-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 15px; }
+.insight-controls label { display: grid; gap: 5px; color: #786a65; font-size: 11px; font-weight: 700; }
+.insight-controls select, .insight-controls input { min-height: 36px; max-width: 100%; padding: 0 10px; border: 1px solid #e3d6d0; border-radius: 4px; background: #fff; color: #443b38; font: inherit; font-size: 12px; }
+.comparison-bars { display: grid; gap: 15px; }
+.metric-bar { display: grid; grid-template-columns: minmax(88px, .7fr) 1.3fr auto; align-items: center; gap: 11px; color: #625653; font-size: 12px; }
+.metric-bar strong { color: #453936; font-size: 12px; text-align: right; }
+.bar-track { height: 9px; overflow: hidden; border-radius: 99px; background: #f1e7e2; }
+.bar-track > span { display: block; width: var(--bar-value, 50%); height: 100%; border-radius: inherit; background: #c9141d; }
+.metric-bar:nth-child(even) .bar-track > span { background: #8d7771; }
+.chart-wrap { position: relative; min-height: 170px; padding: 8px; border-radius: 6px; background: #fcf6f2; }
+.chart-wrap canvas, .chart-wrap svg { display: block; width: 100%; max-width: 100%; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 12px; color: #6e625e; font-size: 11px; }
+.chart-legend > span { display: inline-flex; align-items: center; gap: 7px; }
+.chart-legend i { width: 9px; height: 9px; border-radius: 50%; background: #c9141d; }
+.chart-legend > span:nth-child(even) i { background: #8d7771; }
+.insight-methodology { margin: 18px 0 0; padding: 13px 15px; border-left: 3px solid #c9141d; background: #f8efeb; color: #746863; font-size: 11px; line-height: 1.65; }
+.retention-summary { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 14px; padding: 15px 18px; }
+.retention-summary strong { color: #a92027; font-size: 20px; }
+.retention-summary p { margin: 0; color: #756a66; font-size: 12px; line-height: 1.5; }
+.insight-empty { padding: 28px 20px; color: #756a66; text-align: center; }
+.insight-empty strong { display: block; margin-bottom: 5px; color: #443b38; }
+.insight-empty p { margin: 0; font-size: 13px; line-height: 1.55; }
+.insight-table-wrap { overflow-x: auto; border: 1px solid #eaded8; border-radius: 7px; }
+.insight-table { width: 100%; border-collapse: collapse; background: #fffdfa; text-align: left; font-size: 12px; }
+.insight-table th, .insight-table td { min-width: 110px; padding: 11px 13px; border-bottom: 1px solid #f0e8e3; }
+.insight-table th { color: #7d5551; background: #fbf1ed; font-size: 10px; letter-spacing: .7px; text-transform: uppercase; }
+.insight-table td { color: #5c504c; }
+.insight-table tr:last-child td { border-bottom: 0; }
+.insight-bar-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; margin-bottom: 7px; }
+.metric-bar, .score-breakdown > .metric-bar { display: block; padding: 10px 0; min-width: 0; }
+.score-breakdown > .field-caption { grid-column: 1 / -1; margin: 12px 0 0; }
+.score-number span { font-size: .5em; }
+.benefit-score > small { max-width: 240px; margin-top: 12px; color: #766b67; font-size: 11px; line-height: 1.6; }
+.insight-card h2 { margin-bottom: 14px; font-size: 24px; }
+.retention-card { grid-column: 1 / -1; }
+.retention-summary { display: block; line-height: 1.7; font-size: 13px; }
+.chart-wrap { margin-top: 14px; }
+.insight-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); align-items: start; margin-top: 18px; gap: 14px; }
+.insight-card a, .insight-methodology a { color: #a92027; font-size: 12px; }
+.insight-card summary, .insight-methodology summary { cursor: pointer; padding: 14px 0; font-weight: 700; }
+.insight-methodology p { font-size: 12px; line-height: 1.8; color: #655b57; }
+.insight-table caption { padding: 12px; text-align: left; font-weight: 700; }
+.insight-table td { white-space: normal; }
+@media (max-width: 800px) {
+  .auth-art { min-height: 430px; }
+  .benefit-overview { grid-template-columns: 1fr; }
+  .insight-header { align-items: start; flex-direction: column; }
+}
+@media (max-width: 600px) {
+  .topbar { min-height: 58px; }
+  .topbar .brand { gap: 7px; font-size: 17px; }
+  .brand-logo { width: 35px; height: 23px; }
+  .reset-button { padding: 7px 9px; font-size: 11px; }
+  .auth-art { min-height: 270px; }
+  .auth-brand-story { padding: 24px 22px; gap: 8px; }
+  .auth-brand-story strong { font-size: 28px; }
+  #deal-insights { padding: 23px 14px; }
+  .insight-grid { grid-template-columns: 1fr; }
+  .score-breakdown { grid-template-columns: 1fr; padding: 15px; }
+  .metric-bar { grid-template-columns: minmax(76px, .8fr) 1fr auto; gap: 7px; font-size: 11px; }
+  .metric-bar strong { font-size: 11px; }
+  .retention-summary { align-items: flex-start; flex-direction: column; }
+}

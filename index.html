@@ -3,24 +3,28 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#10281f">
+    <meta name="theme-color" content="#c9141d">
     <meta name="description" content="Pick a Toyota, make a money plan, and take it on three test-drive adventures.">
-    <meta property="og:title" content="Toyota Match — Find the Toyota that fits">
+    <meta property="og:title" content="Toyota Go — To You Total Assistance">
     <meta property="og:description" content="Pick a Toyota, make a money plan, and take it on three test-drive adventures.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2716%27 fill=%27%23244d38%27/%3E%3Cpath d=%27M10 22 22 10M13 10h9v9%27 stroke=%27%23d9ef90%27 stroke-width=%273%27 fill=%27none%27/%3E%3C/svg%3E">
-    <title>Toyota Match — Find the Toyota that fits</title>
+    <title>Toyota Go — To You Total Assistance</title>
+    <link rel="icon" type="image/svg+xml" href="assets/toyota-logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="cars.js" defer></script>
+    <script src="insights-model.js" defer></script>
+    <script src="insights.js" defer></script>
     <script src="game.js" defer></script>
+    <script src="branding.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="topbar">
-      <a class="brand" href="#" aria-label="Toyota Match home"><span class="brand-mark">↗</span> toyota match</a>
-      <div class="top-note"><span class="live-dot"></span> FIND YOUR NEXT TOYOTA</div>
+      <a class="brand" href="#" aria-label="Toyota Go home"><img class="brand-logo" src="assets/toyota-logo.svg" alt="Toyota logo"> Toyota Go</a>
+      <div class="top-note">To You Total Assistance</div>
       <button class="reset-button" id="reset-button" type="button">Start over</button>
     </header>
 
@@ -32,10 +36,10 @@
           <div class="auth-art-copy"><span>YOUR NEXT TOYOTA</span><strong>Starts with<br>what matters to you.</strong></div>
         </div>
         <form class="auth-form" id="auth-form">
-          <a class="brand auth-brand" href="#"><span class="brand-mark">↗</span> toyota match</a>
+          <a class="brand auth-brand" href="#"><img class="brand-logo" src="assets/toyota-logo.svg" alt="Toyota logo"> Toyota Go</a>
           <p class="eyebrow">YOUR TOYOTA, YOUR WAY</p>
           <h1 id="auth-title">Let's find a Toyota<br>that <em>fits.</em></h1>
-          <p class="auth-copy">Sign in or create a Toyota Match account to start with your budget, priorities, and the way you drive.</p>
+          <p class="auth-copy">Sign in or create a Toyota Go account to start with your budget, priorities, and the way you drive.</p>
           <div class="auth-tabs" role="tablist" aria-label="Account access">
             <button class="auth-tab active" id="signup-tab" type="button" role="tab" aria-selected="true">Create account</button>
             <button class="auth-tab" id="login-tab" type="button" role="tab" aria-selected="false">Sign in</button>
@@ -171,6 +175,7 @@
             <div class="money-foot">Demo payment estimates · USD<br>APR is not a loan offer or credit decision.</div>
           </aside>
         </div>
+        <section id="deal-insights" aria-label="Deal benefit and vehicle comparisons"></section>
         <div class="compare-tray hidden" id="compare-tray"><span id="compare-names"></span><button class="primary-button" id="open-compare" type="button">Compare cars</button><button class="text-button" id="clear-compare" type="button">Clear</button></div>
       </section>
 
@@ -216,6 +221,6 @@
         <div class="compare-scroll" id="compare-table"></div>
       </dialog>
     </main>
-    <footer><span>toyota match</span><span>A drive toward a smarter Toyota decision. Independent demo, not affiliated with Toyota Motor Corporation.</span></footer>
+    <footer><span>Toyota Go</span><span>To You Total Assistance · Independent educational demo, not affiliated with Toyota Motor Corporation.</span></footer>
   </body>
 </html>
