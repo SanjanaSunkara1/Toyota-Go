@@ -28,7 +28,21 @@ function dealProjection() {
   const years = [0, 1, 2, 3, 4, 5];
   const values = (price, retention, kind) => years.map(year => {
     const resale = DealModel.retained(price, retention, year);
-    if (!equity || kind === "current" || state.plan.id === "cash") return resale;
+    const current = state.profile.currentVehicle;
+    if (kind === "current" && current?.status === "lease") return null;
+    if (!equity) return resale;
+    if (kind === "current") {
+      if (current?.status !== "loan") return resale;
+      if (current.payoffBalance === null || current.estimatedValue === null) return null;
+      if (year === 0 || current.payoffBalance === 0) return resale - current.payoffBalance;
+      if (current.monthlyPayment === null || current.apr === null) return null;
+      const months = year * 12, rate = current.apr / 1200;
+      const balance = Math.max(0, rate
+        ? current.payoffBalance * Math.pow(1 + rate, months) - current.monthlyPayment * (Math.pow(1 + rate, months) - 1) / rate
+        : current.payoffBalance - current.monthlyPayment * months);
+      return resale - balance;
+    }
+    if (state.plan.id === "cash") return resale;
     if (state.plan.id === "lease") return null;
     return resale - DealModel.balance(price, Math.min(price, state.profile.downPayment), apr, year);
   });
@@ -50,13 +64,53 @@ function retentionChart(series) {
     <desc id="retention-chart-desc">Editable constant annual depreciation scenarios, not forecasts. Exact annual values are provided in the table below. No confidence interval is available.</desc>
     ${ticks.map(t => `<line x1="65" x2="620" y1="${y(t)}" y2="${y(t)}" stroke="#e9e9e9"/><text x="55" y="${y(t) + 4}" text-anchor="end" fill="#666" font-size="11">${dollars(t)}</text>`).join("")}
     ${[0, 1, 2, 3, 4, 5].map(i => `<text x="${x(i)}" y="274" text-anchor="middle" fill="#666" font-size="11">${i === 0 ? "Today" : `Year ${i}`}</text>`).join("")}
-    ${series.map((s, i) => s.values[0] === null ? "" : `<polyline fill="none" stroke="${insightColors[i]}" stroke-width="3" ${i === 2 ? 'stroke-dasharray="6 5"' : ""} points="${s.values.map((v, year) => `${x(year)},${y(v)}`).join(" ")}"/>
-      ${s.values.map((v, year) => `<circle cx="${x(year)}" cy="${y(v)}" r="4" fill="${insightColors[i]}"><title>${insightEscape(s.name)} · Year ${year}: ${dollars(v)}</title></circle>`).join("")}`).join("")}
+    ${series.map((s, i) => s.values.every(value => value === null) ? "" : `<polyline fill="none" stroke="${insightColors[i]}" stroke-width="3" ${i === 2 ? 'stroke-dasharray="6 5"' : ""} points="${s.values.map((v, year) => v === null ? null : `${x(year)},${y(v)}`).filter(Boolean).join(" ")}"/>
+      ${s.values.map((v, year) => v === null ? "" : `<circle cx="${x(year)}" cy="${y(v)}" r="4" fill="${insightColors[i]}"><title>${insightEscape(s.name)} · Year ${year}: ${dollars(v)}</title></circle>`).join("")}`).join("")}
     </svg>`;
 }
 
 function assumptionInput(key, label, min, max, step = 1) {
   return `<label class="form-field">${label}<input type="number" data-assumption="${key}" value="${dealScenario()[key]}" min="${min}" max="${max}" step="${step}" required></label>`;
+}
+
+function currentContractSummary(nextMonthly) {
+  const contract = state.profile.currentVehicle;
+  if (!contract || contract.status === "none") return "";
+  const amount = value => value === null ? "Not provided" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+  let rows = [];
+  if (contract.status === "loan") {
+    const equity = contract.estimatedValue === null || contract.payoffBalance === null ? null : contract.estimatedValue - contract.payoffBalance;
+    const interest = contract.apr === null || contract.payoffBalance === null ? null : contract.payoffBalance * contract.apr / 1200;
+    const principal = interest === null || contract.monthlyPayment === null ? null : contract.monthlyPayment - interest;
+    rows = [
+      ["Current monthly payment", amount(contract.monthlyPayment)],
+      ["Remaining payoff balance", amount(contract.payoffBalance)],
+      ["Estimated current equity", amount(equity)],
+      ["Current APR", contract.apr === null ? "Not provided" : `${contract.apr}%`],
+      ["Remaining term", contract.monthsRemaining === null ? "Not provided" : `${contract.monthsRemaining} months`],
+      ["Estimated next-month interest / principal", interest === null || principal === null ? "Not provided" : `${amount(interest)} / ${amount(principal)}`],
+      ["New plan payment vs. current loan", contract.monthlyPayment === null ? "Not provided" : `${amount(Math.abs(nextMonthly - contract.monthlyPayment))} ${nextMonthly <= contract.monthlyPayment ? "less" : "more"} per month`],
+      ["Current odometer", contract.odometerMileage === null ? "Not provided" : `${contract.odometerMileage.toLocaleString()} miles`],
+    ];
+  } else {
+    const over = contract.currentMileage === null || contract.allowedMileage === null ? null : Math.max(0, contract.currentMileage - contract.allowedMileage);
+    let maturity = "Not provided";
+    if (contract.maturityDate) {
+      const day = new Date(`${contract.maturityDate}T12:00:00`);
+      const days = Math.ceil((day.getTime() - Date.now()) / 86400000);
+      maturity = `${day.toLocaleDateString("en-US")} · ${days < 0 ? `${Math.abs(days)} days past maturity` : `${days} days remaining`}`;
+    }
+    rows = [
+      ["Current base lease payment", amount(contract.leasePayment)],
+      ["Lease maturity", maturity],
+      ["Current / allowed total mileage", contract.currentMileage === null || contract.allowedMileage === null ? "Not provided" : `${contract.currentMileage.toLocaleString()} / ${contract.allowedMileage.toLocaleString()} miles`],
+      ["Miles already over contract allowance", over === null ? "Not provided" : over.toLocaleString()],
+      ["Potential overage at your contract rate", over === null || contract.overageRate === null ? "Add your contract’s per-mile rate to calculate" : amount(over * contract.overageRate)],
+      ["Residual / purchase option price", amount(contract.residualValue)],
+      ["New plan payment vs. current base lease", contract.leasePayment === null ? "Not provided" : `${amount(Math.abs(nextMonthly - contract.leasePayment))} ${nextMonthly <= contract.leasePayment ? "less" : "more"} per month, before differences in taxes/fees`],
+    ];
+  }
+  return `<section class="current-contract-summary"><p class="eyebrow">YOUR CURRENT ${contract.status === "loan" ? "LOAN" : "LEASE"} · DETAILS YOU SHARED</p><h2>Your starting point</h2><dl>${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${insightEscape(value)}</dd></div>`).join("")}</dl><p class="field-caption">This summary does not refinance, settle or terminate your contract. ${contract.status === "loan" ? "Equity is estimated vehicle value minus payoff. It is not automatically added to your new down payment; the amount and any negative equity must be confirmed. Next-month interest is a simplified APR/12 estimate; daily accrual and fees can differ." : "Overage includes miles already driven only; future use, tax, disposition, early-termination and other fees are excluded. Lease residual is a purchase option, not owned equity."}</p></section>`;
 }
 
 function renderDealInsights() {
@@ -72,6 +126,8 @@ function renderDealInsights() {
   const maintenance = [s.toyotaMaintenance, s.rivalMaintenance, s.currentMaintenance];
   root.innerHTML = `
     <div class="insight-header"><div><p class="eyebrow">YOUR DECISION, IN PERSPECTIVE</p><h2>Does the move make sense?</h2><p>Toyota ${insightEscape(car.name)} · ${state.plan.name} · ${p.annualMiles.toLocaleString()} miles/year</p></div><span class="estimate-badge">ILLUSTRATIVE ESTIMATES</span></div>
+    ${(p.skippedQuestions || []).some(key => ["max-price", "monthly-cap", "total-funds", "down-payment", "mileage"].includes(key)) ? '<p class="field-caption skipped-assumption-note">You skipped some financial or mileage questions. Those filters are relaxed; the score and cost examples use broad illustrative limits or default mileage, not your actual savings or budget. Adjust your answers for a more relevant estimate.</p>' : ""}
+    ${currentContractSummary(result.monthly)}
     <div class="benefit-overview">
       <div class="benefit-score"><p class="eyebrow">INSTANT DEAL BENEFIT SCORE</p><strong class="score-number" aria-live="polite">${result.score}<span>%</span></strong><p>${result.score >= 75 ? "A promising modeled fit" : result.score >= 50 ? "A balanced choice, with trade-offs" : "Review the costs and trade-offs"}</p><small>An educational fit index, not a recommendation or probability.</small></div>
       <div class="score-breakdown">
@@ -87,7 +143,7 @@ function renderDealInsights() {
         <p class="retention-summary">${state.plan.id === "lease"
           ? "Leasing does not build ownership equity. Resale value belongs to the lessor, not to you. Rival equity is also unavailable in the lease scenario."
           : `Year-five modeled Toyota resale: <strong>${dollars(DealModel.retained(car.price, s.toyotaRetention, 5))}</strong> (${s.toyotaRetention}% retained). This is retained value, not profit.`}</p>
-        <details><summary>View annual values</summary><div style="overflow-x:auto"><table class="insight-table"><caption>Illustrative ${dealChartMode === "equity" ? "net equity" : "resale value"} (USD)</caption><thead><tr><th scope="col">Year</th>${projection.map(row => `<th scope="col">${insightEscape(row.name)}</th>`).join("")}</tr></thead><tbody>${[0, 1, 2, 3, 4, 5].map(year => `<tr><th scope="row">${year}</th>${projection.map(row => `<td>${row.values[year] === null ? "Not owned" : dollars(row.values[year])}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details>
+        <details><summary>View annual values</summary><div style="overflow-x:auto"><table class="insight-table"><caption>Illustrative ${dealChartMode === "equity" ? "net equity" : "resale value"} (USD)</caption><thead><tr><th scope="col">Year</th>${projection.map(row => `<th scope="col">${insightEscape(row.name)}</th>`).join("")}</tr></thead><tbody>${[0, 1, 2, 3, 4, 5].map(year => `<tr><th scope="row">${year}</th>${projection.map(row => `<td>${row.values[year] === null ? "Not owned / insufficient data" : dollars(row.values[year])}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details>
       </article>
       <article class="insight-card"><p class="eyebrow">SAFETY & CONFIDENCE</p><h2>Assumed assist-feature coverage</h2><p>See how Toyota's driver-assistance focus could compare in this example.</p>
         ${insightBars(labels.map((name, i) => [name, [s.toyotaSafety, s.rivalSafety, s.currentSafety][i]]), "%")}
@@ -123,7 +179,7 @@ function renderDealInsights() {
         ${assumptionInput("currentMaintenance", "Current maintenance budget ($/year)", 0, 5000, 50)}
       </div><button class="text-button" id="reset-deal-assumptions" type="button">Reset example assumptions</button>
       <p><strong>Score:</strong> 45% financial + 25% ecological + 20% assist coverage + 10% maintenance headroom. Financial = 55% monthly headroom + 25% savings headroom + 20% resale retention (0 for lease). Monthly headroom = 100 × [1 − ownership cost ÷ (2 × payment cap)]. Savings headroom = 100 × [1 − (due + $300 reserve) ÷ savings]. Each component is clamped to 0–100. Ecological = 50 + 50 × reduction in tailpipe CO₂ relative to the current car, clamped to 0–100.</p>
-      <p><strong>Projection:</strong> value × (year-five retention ÷ 100)<sup>year ÷ 5</sup>. Net equity subtracts a 60-month amortizing loan balance at your example APR and down payment; cash has no balance. Rival uses the same payment type, down payment and APR for comparison, even if outside your filters. Current car is assumed paid off. Current-car trade-in proceeds are not applied to the new purchase. Taxes/fees are paid upfront, not financed. Insurance, inflation, selling costs and lifecycle emissions are excluded. Equity is not net ownership cost or investment return.</p>
+      <p><strong>Projection:</strong> value × (year-five retention ÷ 100)<sup>year ÷ 5</sup>. New-vehicle net equity subtracts a 60-month amortizing loan balance at your example APR and down payment; cash has no balance. Rival uses the same payment type, down payment and APR for comparison, even if outside your filters. The current car is assumed paid off unless you provide current loan details. With a current loan, the model uses the supplied payoff, monthly payment and APR; missing data leaves future equity unavailable. A currently leased car has no owned-equity or retained-resale series. Current-car trade-in proceeds are not applied to the new purchase. Taxes/fees are paid upfront, not financed. Insurance, inflation, selling costs and lifecycle emissions are excluded. Equity is not net ownership cost or investment return.</p>
       <p><a href="https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle" target="_blank" rel="noopener noreferrer">EPA gasoline emissions factor ↗</a> · All resale, safety and maintenance assumptions are illustrative; no confidence intervals are available.</p>
     </details>`;
   root.querySelector("#deal-chart-mode").addEventListener("change", event => {

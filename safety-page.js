@@ -1,6 +1,5 @@
 (() => {
   const grid = document.querySelector("#electric-grid");
-  const colors = ["#37597a", "#60745b", "#536a7b", "#a95751"];
   function powerType(car) {
     return car.fcev ? "fcev" : car.phev ? "phev" : car.ev ? "ev" : car.hybrid ? "hybrid" : "gas";
   }
@@ -8,37 +7,25 @@
     if (!grid) return;
     const models = cars.filter(car => car.ev || car.hybrid || car.fcev)
       .filter(car => filter === "all" || powerType(car) === filter);
-    grid.innerHTML = models.length ? models.map((car, index) => {
+    grid.innerHTML = models.length ? models.map((car) => {
       const kind = powerType(car);
       const kindName = { ev: "Battery electric", phev: "Plug-in hybrid", hybrid: "Hybrid", fcev: "Fuel cell" }[kind];
       const range = car.epa;
-      const img = car.images[0];
       return `<article class="electric-card">
-        <div class="electric-photo"><img src="${img}" alt="Toyota ${insightEscape(car.name)}" loading="lazy" onerror="this.hidden=true"><span class="electric-type">${kindName}</span></div>
+        <div class="electric-photo">${carIllustration(car)}<span class="electric-type">${kindName}</span></div>
         <div class="electric-copy"><small>${car.type.split(" · ")[0]} MODEL YEAR</small><h3>Toyota ${insightEscape(car.name)}</h3>
           <p>${insightEscape(car.subtitle)}</p><div class="electric-facts"><strong>${dollars(car.price)}</strong><span>${insightEscape(range)}</span></div>
           <a href="${car.url}" target="_blank" rel="noopener noreferrer">Explore official details ↗</a>
-          <button type="button" class="electric-choose" data-model="${car.id}">Choose this Toyota</button>
+          <button type="button" class="electric-choose" data-model="${car.id}">Find Toyotas like this</button>
         </div>
       </article>`;
     }).join("") : '<p class="insight-empty">No current model in this powertrain category. See Toyota for current availability.</p>';
     grid.querySelectorAll(".electric-choose").forEach(button => button.addEventListener("click", () => {
       const car = cars.find(item => item.id === button.dataset.model);
       if (!car) return;
-      navigateToPage("customization");
-      if (state.profile) {
-        const match = cars.find(item => item.id === car.id);
-        state.car = match;
-        state.allMatches = [match, ...state.allMatches.filter(item => item.id !== match.id)];
-        state.matches = [match, ...state.matches.filter(item => item.id !== match.id)];
-        renderSetup();
-        document.querySelector(".intro").classList.remove("hidden");
-        document.querySelector(".game-shell").classList.remove("hidden");
-        document.querySelector(".needs-shell").classList.add("hidden");
-      } else {
-        document.querySelector("#fuel-interest").value = car.ev || car.fcev ? "hybrid" : "any";
-        showNeeds();
-      }
+      document.querySelector("#car-type-filter").value = car.body;
+      document.querySelector("#fuel-interest").value = powerType(car);
+      showNeeds();
     }));
   }
   document.querySelectorAll(".electric-tabs [data-power]").forEach(tab => tab.addEventListener("click", () => {

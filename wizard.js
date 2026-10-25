@@ -5,6 +5,8 @@
   const byId = id => document.getElementById(id);
   let steps = [];
   let current = 0;
+  const skipped = new Set();
+  needsForm.noValidate = true;
 
   function addFieldsetQuestion(id, title, nodes, key, condition = () => true) {
     steps.push({ id, title, nodes: nodes.filter(Boolean), key, condition });
@@ -76,24 +78,27 @@
     "total-funds": ["total-funds", "100000"], "down-payment": ["down-payment", "0"],
     credit: ["credit-tier", "unknown"], payment: ["payment-preference", "any"],
     mileage: ["annual-miles", "12000"], ownership: ["current-vehicle-status", "none"],
-    trade: ["trade-intent", "no"], "loan-0": ["current-loan-payment", "0"],
-    "loan-1": ["current-loan-balance", "0"], "loan-2": ["current-vehicle-value", "0"],
-    "loan-3": ["current-loan-apr", "0"], "loan-4": ["current-loan-term", "1"],
-    "lease-0": ["current-lease-payment", "0"], "lease-1": ["lease-maturity", ""],
-    "lease-2": ["lease-current-mileage", "0"], "lease-3": ["lease-allowed-mileage", "0"],
-    "lease-4": ["lease-residual", "0"], safety: ["safety-priority", "all"],
+    trade: ["trade-intent", "no"], "loan-0": ["current-loan-payment", ""],
+    "loan-1": ["current-loan-balance", ""], "loan-2": ["current-vehicle-value", ""],
+    "loan-3": ["current-loan-apr", ""], "loan-4": ["current-loan-term", ""], "loan-5": ["current-loan-mileage", ""],
+    "lease-0": ["current-lease-payment", ""], "lease-1": ["lease-maturity", ""],
+    "lease-2": ["lease-current-mileage", ""], "lease-3": ["lease-allowed-mileage", ""],
+    "lease-4": ["lease-residual", ""], "lease-5": ["lease-overage-rate", ""], safety: ["safety-priority", "all"],
     passengers: ["passengers", "2"], driving: ["driving-style", "mixed"],
     powertrain: ["fuel-interest", "any"],
   };
 
   function visibleSteps() { return steps.filter(step => step.condition()); }
-  function activeSteps() { return steps.filter((step, index) => step.nodes.some(node => node?.isConnected) && step.condition()); }
   function render() {
     const visible = visibleSteps();
     const step = visible[current];
     if (!step) return;
     const activeIndex = [...screens.children].findIndex(node => node.dataset.question === step.id);
-    [...screens.children].forEach((node, index) => node.classList.toggle("hidden", index !== activeIndex));
+    [...screens.children].forEach((node, index) => {
+      node.classList.toggle("hidden", index !== activeIndex);
+      const configuration = steps.find(item => item.id === node.dataset.question);
+      node.querySelectorAll("input,select").forEach(input => { input.disabled = !configuration.condition(); });
+    });
     const pos = current + 1;
     byId("wizard-step-label").textContent = `Question ${pos} of ${visible.length}`;
     byId("wizard-step-title").textContent = step.title;
@@ -108,13 +113,16 @@
     const step = visible[current];
     if (!step) return;
     if (skip) {
+      skipped.add(step.key);
       const defaults = skipDefaults[step.key];
       if (defaults) {
         const control = byId(defaults[0]);
         if (control) control.value = defaults[1];
       }
-      if (step.id === "safety-needs") document.querySelectorAll('.needs-card .check-row input[type="checkbox"]').forEach(input => { input.checked = false; });
+      if (step.id === "safety-needs") screens.querySelectorAll('.check-row input[type="checkbox"]').forEach(input => { input.checked = false; });
+      step.nodes.forEach(node => node.querySelectorAll?.("input").forEach(input => input.setCustomValidity("")));
     } else {
+      skipped.delete(step.key);
       const screen = screens.children[[...screens.children].findIndex(node => node.dataset.question === step.id)];
       const control = screen?.querySelector("input:not([type=checkbox]):not([type=radio]), select");
       if (control && !control.checkValidity()) { control.reportValidity(); return; }
@@ -123,9 +131,9 @@
         byId("down-payment").reportValidity(); return;
       }
       byId("down-payment").setCustomValidity("");
-      if (step.id === "ownership" || step.id === "trade") buildQuestions();
     }
     const updated = visibleSteps();
+    if (current === updated.length - 1) { needsForm.requestSubmit(); return; }
     current = Math.min(current + 1, updated.length - 1);
     render();
     const active = screens.querySelector(".question-step:not(.hidden)");
@@ -145,6 +153,7 @@
     ? needsForm.requestSubmit() : moveNext(false));
   byId("wizard-skip").addEventListener("click", () => moveNext(true));
   byId("wizard-back").addEventListener("click", () => { current = Math.max(0, current - 1); render(); });
+  needsForm.addEventListener("input", event => event.target.setCustomValidity?.(""));
   byId("current-vehicle-status").addEventListener("change", () => {
     byId("current-loan-fields").classList.toggle("hidden", byId("current-vehicle-status").value !== "loan");
     byId("current-lease-fields").classList.toggle("hidden", byId("current-vehicle-status").value !== "lease");
@@ -155,5 +164,10 @@
   buildQuestions();
   current = 0;
   render();
-  window.ToyotaWizard = { reset() { buildQuestions(); current = 0; render(); }, restart() { current = 0; render(); } };
+  window.ToyotaWizard = {
+    reset() { skipped.clear(); current = 0; render(); },
+    restart() { current = 0; render(); },
+    skipped() { return [...skipped]; },
+    finish: () => needsForm.requestSubmit(),
+  };
 })();

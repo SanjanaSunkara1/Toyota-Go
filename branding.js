@@ -28,6 +28,15 @@
   const authCopy = document.querySelector(".auth-copy");
   if (authCopy) authCopy.textContent = "Sign in or create an account to explore Toyota choices that fit your budget, priorities, and the way you drive.";
   const authArt = document.querySelector(".auth-art");
+  const resultsArt = document.querySelector(".hero-art");
+  if (resultsArt) {
+    const photo = document.createElement("img");
+    photo.className = "result-hero-photo";
+    photo.src = "attached_assets/image_1792909171658.png";
+    photo.alt = "White Toyota SUV driving through a sunlit trail";
+    resultsArt.replaceChildren(photo);
+    resultsArt.setAttribute("aria-label", "Toyota SUV on a sunlit trail");
+  }
   if (authArt) {
     authArt.replaceChildren();
     const photo = document.createElement("img");

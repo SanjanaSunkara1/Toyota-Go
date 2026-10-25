@@ -113,9 +113,11 @@ function monthlyPayment(car, plan) {
 
 function planIsAffordable(car, plan) {
   const p = state.profile;
-  const leaseMileageFits = plan.id !== "lease" || p.annualMiles <= 10000;
-  return leaseMileageFits && car.price <= p.maxPrice && monthlyPayment(car, plan) <= p.monthlyCap &&
-    upfrontCost(car, plan) + monthlyPayment(car, plan) + ROAD_RESERVE <= p.totalFunds;
+  const skipped = p.skippedQuestions || [];
+  const leaseMileageFits = plan.id !== "lease" || skipped.includes("mileage") || p.annualMiles <= 10000;
+  return leaseMileageFits && (skipped.includes("max-price") || car.price <= p.maxPrice) &&
+    (skipped.includes("monthly-cap") || monthlyPayment(car, plan) <= p.monthlyCap) &&
+    (skipped.includes("total-funds") || upfrontCost(car, plan) + monthlyPayment(car, plan) + ROAD_RESERVE <= p.totalFunds);
 }
 
 function meetsNeeds(car) {
@@ -124,7 +126,10 @@ function meetsNeeds(car) {
   if (p.bodyStyle && p.bodyStyle !== "any" && car.body !== p.bodyStyle) return false;
   if (car.seats < seatsNeeded || (p.childSeats && car.body === "coupe")) return false;
   if (p.awd && !car.awd) return false;
-  if (p.fuelInterest === "hybrid" && !green) return false;
+  if (p.fuelInterest === "hybrid" && !car.hybrid) return false;
+  if (p.fuelInterest === "ev" && !car.ev) return false;
+  if (p.fuelInterest === "phev" && !car.phev) return false;
+  if (p.fuelInterest === "fcev" && !car.fcev) return false;
   if (p.fuelInterest === "gas" && green) return false;
   return true;
 }
@@ -132,9 +137,10 @@ function meetsNeeds(car) {
 function requirementChips(car, plan) {
   const p = state.profile, need = p.childSeats || p.passengers >= 4 ? 5 : p.passengers;
   const pay = monthlyPayment(car, plan);
-  const chips = [`Price ${dollars(car.price)} ≤ ${dollars(p.maxPrice)} max`,
-    plan.id === "cash" ? "No monthly payment" : `${dollars(pay)}/mo ≤ ${dollars(p.monthlyCap)} cap`,
-    `${dollars(upfrontCost(car, plan))} due ≤ ${dollars(p.totalFunds)} savings`, `${car.seats} seats (need ${need})`];
+  const skipped = p.skippedQuestions || [];
+  const chips = [skipped.includes("max-price") ? `Price ${dollars(car.price)} · no price filter` : `Price ${dollars(car.price)} ≤ ${dollars(p.maxPrice)} max`,
+    plan.id === "cash" ? "No monthly payment" : skipped.includes("monthly-cap") ? `${dollars(pay)}/mo example` : `${dollars(pay)}/mo ≤ ${dollars(p.monthlyCap)} cap`,
+    skipped.includes("total-funds") ? `${dollars(upfrontCost(car, plan))} due · savings not specified` : `${dollars(upfrontCost(car, plan))} due ≤ ${dollars(p.totalFunds)} savings`, `${car.seats} seats (need ${need})`];
   if (p.awd) chips.push("AWD");
   if (p.fuelInterest === "hybrid") chips.push("Hybrid / electric");
   if (p.fuelInterest === "gas") chips.push("Gas-powered");
@@ -258,14 +264,14 @@ function renderSetup() {
   }
   renderCars();
   renderPlans();
-  document.querySelector("#budget-amount").textContent = dollars(state.profile.totalFunds);
-  document.querySelector("#budget-caption").textContent = `Upfront + trip savings · ${dollars(state.profile.maxPrice)} max car price`;
+  document.querySelector("#budget-amount").textContent = state.profile.skippedQuestions?.includes("total-funds") ? "Not specified" : dollars(state.profile.totalFunds);
+  document.querySelector("#budget-caption").textContent = state.profile.skippedQuestions?.includes("max-price") ? "No maximum vehicle-price filter applied" : `Upfront + trip savings · ${dollars(state.profile.maxPrice)} max car price`;
   document.querySelector("#upfront-cost").textContent = dollars(upfrontCost(state.car, state.plan));
   document.querySelector("#monthly-cost").textContent = state.plan.id === "cash" ? "None" : `${dollars(monthlyPayment(state.car, state.plan))} / mo`;
   document.querySelector("#credit-apr").textContent = `${(illustrativeApr() * 100).toFixed(1)}% example`;
   document.querySelector("#plan-grid").querySelector('[data-plan="loan"] p').textContent =
     `Estimated payment · ${(illustrativeApr() * 100).toFixed(1)}% example APR · 60 months`;
-  document.querySelector("#annual-mile-value").textContent = `${state.profile.annualMiles.toLocaleString("en-US")} mi / yr`;
+  document.querySelector("#annual-mile-value").textContent = `${state.profile.annualMiles.toLocaleString("en-US")} mi / yr${state.profile.skippedQuestions?.includes("mileage") ? " (example)" : ""}`;
   document.querySelector("#fit-copy").textContent = `${state.car.fit} ${state.profile.awd && state.car.awd ? "Matches your interest in available AWD." : ""}`;
   renderDealInsights();
 }
@@ -287,6 +293,7 @@ function readNeedsForm() {
   downPaymentInput.setCustomValidity(downPayment > totalFunds ? "Your planned down payment cannot exceed your available savings." : "");
   if (!form.reportValidity()) return;
   const preferredPlan = document.querySelector("#payment-preference").value;
+  const optionalNumber = id => document.querySelector(`#${id}`).value === "" ? null : Number(document.querySelector(`#${id}`).value);
   state.profile = {
     maxPrice,
     monthlyCap,
@@ -294,6 +301,7 @@ function readNeedsForm() {
     downPayment,
     bodyStyle: document.querySelector("#car-type-filter").value,
     paintColor: document.querySelector("#paint-color").value,
+    skippedQuestions: ToyotaWizard.skipped(),
     annualMiles: Number(document.querySelector("#annual-miles").value),
     creditTier: document.querySelector("#credit-tier").value,
     safetyPriority: document.querySelector("#safety-priority").value,
@@ -307,19 +315,24 @@ function readNeedsForm() {
     currentVehicle: {
       status: document.querySelector("#current-vehicle-status").value,
       tradeIntent: document.querySelector("#trade-intent").value,
-      monthlyPayment: Number(document.querySelector("#current-loan-payment").value || 0),
-      payoffBalance: Number(document.querySelector("#current-loan-balance").value || 0),
-      estimatedValue: Number(document.querySelector("#current-vehicle-value").value || 0),
-      apr: Number(document.querySelector("#current-loan-apr").value || 0),
-      monthsRemaining: Number(document.querySelector("#current-loan-term").value || 0),
-      leasePayment: Number(document.querySelector("#current-lease-payment").value || 0),
+      monthlyPayment: optionalNumber("current-loan-payment"),
+      payoffBalance: optionalNumber("current-loan-balance"),
+      estimatedValue: optionalNumber("current-vehicle-value"),
+      apr: optionalNumber("current-loan-apr"),
+      monthsRemaining: optionalNumber("current-loan-term"),
+      odometerMileage: optionalNumber("current-loan-mileage"),
+      leasePayment: optionalNumber("current-lease-payment"),
       maturityDate: document.querySelector("#lease-maturity").value,
-      currentMileage: Number(document.querySelector("#lease-current-mileage").value || 0),
-      allowedMileage: Number(document.querySelector("#lease-allowed-mileage").value || 0),
-      residualValue: Number(document.querySelector("#lease-residual").value || 0),
+      currentMileage: optionalNumber("lease-current-mileage"),
+      allowedMileage: optionalNumber("lease-allowed-mileage"),
+      residualValue: optionalNumber("lease-residual"),
+      overageRate: optionalNumber("lease-overage-rate"),
     },
   };
   state.compare = [];
+  if (state.profile.currentVehicle.status === "loan" && state.profile.currentVehicle.estimatedValue !== null) {
+    activeDealScenario.currentValue = state.profile.currentVehicle.estimatedValue;
+  }
   cars.forEach((c) => { c.awdAdded = !!(state.profile.awd && c.awd && !c.awdStd); c.price = c.basePrice + (c.awdAdded ? AWD_PREMIUM : 0); });
   plans[0].description = `Estimated payment · ${(illustrativeApr() * 100).toFixed(1)}% example APR · 60 months`;
   state.allMatches = cars.filter((car) => meetsNeeds(car) && car.price <= maxPrice && (preferredPlan === "any"
@@ -356,7 +369,6 @@ function readNeedsForm() {
     `Here are the Toyotas that fit your price and payment guardrails${name}. Demo prices and payments are estimates; check Toyota for current trims, features, and pricing.`;
   document.querySelector("#auth-shell").classList.add("hidden");
   document.querySelector("#needs-shell").classList.add("hidden");
-  document.querySelectorAll(".needs-shell input[type=number]").forEach(input => { input.required = false; });
   document.querySelector(".intro").classList.remove("hidden");
   document.querySelector("#edit-preferences").classList.remove("hidden");
   document.querySelector(".game-shell").classList.remove("hidden");
@@ -695,7 +707,7 @@ function drawDriveScene(progress, moving) {
 
 function updateDrive(timestamp) {
   const d = state.drive;
-  if (!d || d.finished) return;
+  if (!d || d.finished || d.paused) return;
   const delta = Math.min(100, timestamp - d.lastFrame);
   d.lastFrame = timestamp;
   const dt = delta / 1000;
@@ -1031,7 +1043,6 @@ function showNeeds() {
   document.querySelector(".game-shell").classList.add("hidden");
   document.querySelector("#drive-shell").classList.add("hidden");
   document.querySelector("#ending-shell").classList.add("hidden");
-  document.querySelectorAll(".needs-shell input[type=number]").forEach(input => { input.required = false; });
   ToyotaWizard?.restart();
   navigateToPage("customization");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1084,6 +1095,7 @@ function resetGame() {
     step.classList.toggle("active", index === 0);
     step.classList.remove("done");
   });
+  navigateToPage("home");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1096,10 +1108,6 @@ document.querySelector("#auth-form").addEventListener("submit", (event) => {
   state.name = document.querySelector("#account-name").value.trim();
   document.querySelector("#account-password").value = "";
   showNeeds();
-});
-document.querySelector("#needs-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  readNeedsForm();
 });
 document.querySelector("#edit-needs").addEventListener("click", showNeeds);
 document.querySelector("#start-drive").addEventListener("click", startDrive);
@@ -1122,7 +1130,7 @@ document.querySelector("#print-results").addEventListener("click", () => window.
 document.querySelector("#replay-button").addEventListener("click", showNeeds);
 document.querySelector("#edit-preferences").addEventListener("click", showNeeds);
 window.addEventListener("keydown", (event) => {
-  if (!state.drive || state.drive.finished) return;
+  if (!state.drive || state.drive.finished || state.drive.paused) return;
   const key = event.key.toLowerCase();
   if (key === "arrowleft" || key === "a") {
     event.preventDefault();

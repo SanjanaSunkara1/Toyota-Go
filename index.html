@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="experience.css">
     <script src="cars.js" defer></script>
     <script src="insights-model.js" defer></script>
     <script src="insights.js" defer></script>
@@ -39,6 +40,10 @@
 
     <main id="main" tabindex="-1">
       <section id="home-page" class="page-view" data-view="home" aria-label="Home">
+      <section id="home-overview" class="home-overview hidden">
+        <p class="eyebrow">TOYOTA GO · TO YOU TOTAL ASSISTANCE</p><h1>Your next Toyota,<br><em>your way.</em></h1><p>Return to your personalized shortlist, adjust your preferences, or explore safety and Toyota’s electrified lineup.</p>
+        <div class="home-actions"><button id="home-resume" class="primary-button" type="button">Find my Toyota</button><button id="home-safety" class="skip-button" type="button">Explore safety &amp; sustainability</button></div>
+      </section>
       <section class="auth-shell" id="auth-shell" aria-labelledby="auth-title">
         <div class="auth-art">
           <div class="auth-sun"></div><div class="auth-hills"></div>
@@ -104,7 +109,7 @@
                 <select id="driving-style"><option value="mixed">A mix of city and highway</option><option value="city">Mostly city / commuting</option><option value="highway">Mostly highway / long trips</option><option value="adventure">Weekend adventures and gear</option></select>
               </label>
               <label class="form-field">What would you like to explore?
-                <select id="fuel-interest"><option value="any">I'm open to options</option><option value="hybrid">Hybrid efficiency</option><option value="gas">Gas-powered simplicity</option></select>
+                <select id="fuel-interest"><option value="any">I'm open to options</option><option value="hybrid">Hybrid efficiency</option><option value="ev">Battery electric</option><option value="phev">Plug-in hybrid</option><option value="fcev">Hydrogen fuel cell</option><option value="gas">Gas-powered simplicity</option></select>
               </label>
             </fieldset>
           </div>
@@ -123,21 +128,23 @@
             <label class="form-field">Which best describes you?<select id="current-vehicle-status"><option value="none">No current loan or lease</option><option value="loan">I have a vehicle loan</option><option value="lease">I currently lease</option></select></label>
             <label class="form-field" id="trade-intent-field">Would you consider selling or trading it?<select id="trade-intent"><option value="no">Not sure / not right now</option><option value="yes">Yes, possibly</option></select></label>
             <div id="current-loan-fields" class="hidden">
-              <label class="form-field">Current monthly loan payment ($)<input id="current-loan-payment" type="number" min="0" max="5000" step="1" value="450"></label>
-              <label class="form-field">Loan payoff balance ($)<input id="current-loan-balance" type="number" min="0" max="200000" step="100" value="12000"></label>
-              <label class="form-field">Estimated current vehicle value ($)<input id="current-vehicle-value" type="number" min="0" max="200000" step="500" value="18000"><small class="field-caption">Use a rough estimate; a dealer appraisal determines actual trade-in value.</small></label>
-              <label class="form-field">Current loan APR (%)<input id="current-loan-apr" type="number" min="0" max="40" step="0.1" value="6.9"></label>
-              <label class="form-field">Remaining loan term (months)<input id="current-loan-term" type="number" min="1" max="480" step="1" value="36"></label>
+              <label class="form-field">Current monthly loan payment ($)<input id="current-loan-payment" type="number" min="0" max="5000" step="0.01" placeholder="e.g. 450.25"></label>
+              <label class="form-field">Loan payoff balance ($)<input id="current-loan-balance" type="number" min="0" max="200000" step="0.01" placeholder="e.g. 12000"></label>
+              <label class="form-field">Estimated current vehicle value ($)<input id="current-vehicle-value" type="number" min="0" max="200000" step="1" placeholder="e.g. 18000"><small class="field-caption">Use a rough estimate; a dealer appraisal determines actual trade-in value.</small></label>
+              <label class="form-field">Current loan APR (%)<input id="current-loan-apr" type="number" min="0" max="40" step="0.01" placeholder="e.g. 6.9"></label>
+              <label class="form-field">Remaining loan term (months)<input id="current-loan-term" type="number" min="1" max="480" step="1" placeholder="e.g. 36"></label>
+              <label class="form-field">Current vehicle odometer mileage<input id="current-loan-mileage" type="number" min="0" max="1000000" step="1" placeholder="e.g. 42000"></label>
             </div>
             <div id="current-lease-fields" class="hidden">
-              <label class="form-field">Current base monthly lease payment ($)<input id="current-lease-payment" type="number" min="0" max="5000" step="1" value="399"></label>
+              <label class="form-field">Current base monthly lease payment ($)<input id="current-lease-payment" type="number" min="0" max="5000" step="0.01" placeholder="e.g. 399"></label>
               <label class="form-field">Lease maturity date<input id="lease-maturity" type="date"></label>
-              <label class="form-field">Current odometer mileage<input id="lease-current-mileage" type="number" min="0" max="500000" step="100" value="24000"></label>
-              <label class="form-field">Allowed mileage for the entire lease<input id="lease-allowed-mileage" type="number" min="0" max="500000" step="1000" value="30000"></label>
-              <label class="form-field">Residual / lease-end purchase option ($)<input id="lease-residual" type="number" min="0" max="200000" step="500" value="22000"></label>
+              <label class="form-field">Current odometer mileage<input id="lease-current-mileage" type="number" min="0" max="500000" step="1" placeholder="e.g. 24000"></label>
+              <label class="form-field">Allowed mileage for the entire lease<input id="lease-allowed-mileage" type="number" min="0" max="500000" step="1" placeholder="e.g. 30000"></label>
+              <label class="form-field">Residual / lease-end purchase option ($)<input id="lease-residual" type="number" min="0" max="200000" step="0.01" placeholder="e.g. 22000"></label>
+              <label class="form-field">Contract mileage-overage charge ($ per mile)<input id="lease-overage-rate" type="number" min="0" max="5" step="0.01" placeholder="Optional, e.g. 0.25"><small class="field-caption">Use your contract’s rate to estimate any overage already incurred. Future mileage is not forecast.</small></label>
             </div>
           </fieldset>
-          <div class="needs-footer"><p class="prototype-note"><span>ⓘ</span> No Social Security number, bank details, or credit check. Your answers stay in this demo session.</p><button class="primary-button" type="submit">Find my Toyota matches <span>→</span></button></div>
+          <div class="needs-footer"><p class="prototype-note"><span>ⓘ</span> No Social Security number, bank details, or credit check. Your answers stay in this demo session.</p></div>
         </form>
       </section>
 

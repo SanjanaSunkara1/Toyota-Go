@@ -15,13 +15,25 @@ use external Google/Toyota hosts; the branding image and logo are local.
 - Toyota Go branding and tagline: **To You Total Assistance**.
 - Demo signup/login only. Passwords are not saved or sent.
 - Budget/needs filters, Toyota shortlist, up to three-car comparison, payment plans and driving games.
+- Skippable, one-question-at-a-time preferences with body-style, paint preference and mileage questions.
+- Conditional current loan/lease questions; estimated current equity, payment baseline,
+  lease maturity, and already-incurred mileage overage using the customer's optional contract rate.
+- Home, Customization, and Vehicle Safety & Sustainability navigation.
+- Public illustrative 2D safety animation, sourced IIHS model-year awards, electrified-model
+  exploration, and Toyota environmental facts/goals with source links.
+- Customization uses neutral/evergreen styling; Toyota red is reserved for the top bar.
 - Instant Deal Benefit Score and five-year retained-value/net-equity scenarios.
 - Safety is illustrative assist-feature coverage, not crash performance.
 - Environmental comparison is tailpipe CO₂, not lifecycle emissions.
 - Reliability is a maintenance-budget proxy, not measured failure rates.
 - All resale, coverage and maintenance assumptions are editable educational examples.
   Do not describe them as verified brand performance or a guarantee.
-- Current vehicle is assumed owned outright. Rival is a generic gasoline scenario.
+- Current vehicle is assumed owned outright unless the customer supplies current loan details.
+  Current leased vehicles have no owned-equity series. Trade-in equity is not automatically
+  applied to a new purchase. Rival is a generic gasoline scenario.
+- Skipped finance filters are relaxed and explicitly disclosed broad example inputs are
+  used for educational scores, not presented as the customer's actual budget.
+- Paint preference does not guarantee model/trim/dealer color availability.
 - The model and all assumptions/methodology are visible in the comparison dashboard.
 
 ## Verify

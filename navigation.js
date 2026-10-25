@@ -5,6 +5,19 @@
   window.navigateToPage = function navigateToPage(name) {
     const valid = ["home", "customization", "safety"];
     const page = valid.includes(name) ? name : "home";
+    if (state.drive && !state.drive.finished) {
+      if (page !== "customization") {
+        cancelAnimationFrame(state.animationFrame);
+        state.drive.paused = true;
+        Object.keys(state.keys).forEach(key => { state.keys[key] = false; });
+      } else if (state.drive.paused) {
+        state.drive.paused = false;
+        state.drive.lastFrame = performance.now();
+        state.animationFrame = requestAnimationFrame(updateDrive);
+      }
+    }
+    document.querySelector("#home-overview").classList.toggle("hidden", !state.profile);
+    if (page === "home" && !state.profile) document.querySelector("#auth-shell").classList.remove("hidden");
     document.querySelectorAll(".page-view").forEach(section => {
       section.classList.toggle("hidden", section.dataset.view !== page);
     });
@@ -27,7 +40,15 @@
     if (open) menu.querySelector('[data-page="home"]').focus();
   });
   menu.querySelectorAll("[data-page]").forEach(button =>
-    button.addEventListener("click", () => navigateToPage(button.dataset.page)));
+    button.addEventListener("click", () => {
+      if (button.dataset.page === "customization" && !state.profile) showNeeds();
+      else navigateToPage(button.dataset.page);
+    }));
+  document.querySelector("#home-resume")?.addEventListener("click", () => {
+    if (state.profile) navigateToPage("customization");
+    else showNeeds();
+  });
+  document.querySelector("#home-safety")?.addEventListener("click", () => navigateToPage("safety"));
   document.addEventListener("click", event => {
     if (!menu.classList.contains("hidden") && !event.target.closest("#site-menu") && !event.target.closest("#menu-toggle")) {
       menu.classList.add("hidden");
