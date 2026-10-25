@@ -65,6 +65,18 @@
       article.className = "question-step hidden";
       article.dataset.question = step.id;
       article.setAttribute("aria-label", step.title);
+      const heading = document.createElement("div");
+      heading.className = "question-heading";
+      const caption = document.createElement("span");
+      caption.textContent = step.title;
+      const skip = document.createElement("button");
+      skip.className = "question-skip";
+      skip.type = "button";
+      skip.textContent = "Skip";
+      skip.setAttribute("aria-label", `Skip ${step.title}`);
+      skip.addEventListener("click", () => { skipQuestion(step); render(); });
+      heading.append(caption, skip);
+      article.append(heading);
       step.nodes.forEach(node => { if (node) article.append(node); });
       screens.append(article);
     }
@@ -89,74 +101,82 @@
   };
 
   function visibleSteps() { return steps.filter(step => step.condition()); }
+  function pageQuestions() { return visibleSteps().slice(current * 3, current * 3 + 3); }
+  function pageCount() { return Math.ceil(visibleSteps().length / 3); }
+  function skipQuestion(step) {
+    skipped.add(step.key);
+    const defaults = skipDefaults[step.key];
+    if (defaults) byId(defaults[0]).value = defaults[1];
+    if (step.id === "safety-needs") screens.querySelectorAll('.check-row input[type="checkbox"]').forEach(input => { input.checked = false; });
+    step.nodes.forEach(node => node.querySelectorAll?.("input").forEach(input => input.setCustomValidity("")));
+  }
   function render() {
     const visible = visibleSteps();
-    const step = visible[current];
-    if (!step) return;
-    const activeIndex = [...screens.children].findIndex(node => node.dataset.question === step.id);
-    [...screens.children].forEach((node, index) => {
-      node.classList.toggle("hidden", index !== activeIndex);
+    current = Math.min(current, Math.ceil(visible.length / 3) - 1);
+    const group = pageQuestions();
+    [...screens.children].forEach(node => {
+      node.classList.toggle("hidden", !group.some(step => step.id === node.dataset.question));
       const configuration = steps.find(item => item.id === node.dataset.question);
+      node.classList.toggle("question-skipped", skipped.has(configuration.key));
+      node.querySelector(".question-skip").textContent = skipped.has(configuration.key) ? "Skipped" : "Skip";
       node.querySelectorAll("input,select").forEach(input => { input.disabled = !configuration.condition(); });
     });
     const pos = current + 1;
-    byId("wizard-step-label").textContent = `Question ${pos} of ${visible.length}`;
-    byId("wizard-step-title").textContent = step.title;
-    byId("wizard-progress-fill").style.width = `${pos / visible.length * 100}%`;
+    byId("wizard-step-label").textContent = `Step ${pos} of ${pageCount()}`;
+    byId("wizard-step-title").textContent = current === 0 ? "Start with your preferences" : "A little more about your needs";
+    byId("wizard-progress-fill").style.width = `${pos / pageCount() * 100}%`;
     byId("wizard-back").disabled = current === 0;
     byId("wizard-skip").hidden = false;
-    byId("wizard-next").textContent = current === visible.length - 1 ? "Find my Toyota matches" : "Next";
-    byId("wizard-next").setAttribute("aria-label", current === visible.length - 1 ? "Find my Toyota matches" : "Next question");
+    byId("wizard-skip").textContent = "Skip these questions";
+    byId("wizard-next").textContent = current === pageCount() - 1 ? "Find my Toyota matches" : "Next";
+    byId("wizard-next").setAttribute("aria-label", byId("wizard-next").textContent);
   }
   function moveNext(skip = false) {
-    const visible = visibleSteps();
-    const step = visible[current];
-    if (!step) return;
-    if (skip) {
-      skipped.add(step.key);
-      const defaults = skipDefaults[step.key];
-      if (defaults) {
-        const control = byId(defaults[0]);
-        if (control) control.value = defaults[1];
+    const group = pageQuestions();
+    if (skip) group.forEach(skipQuestion);
+    byId("down-payment").setCustomValidity("");
+    for (const step of group) {
+      const screen = [...screens.children].find(node => node.dataset.question === step.id);
+      for (const control of screen.querySelectorAll("input,select")) {
+        if (!control.checkValidity()) { control.reportValidity(); return; }
       }
-      if (step.id === "safety-needs") screens.querySelectorAll('.check-row input[type="checkbox"]').forEach(input => { input.checked = false; });
-      step.nodes.forEach(node => node.querySelectorAll?.("input").forEach(input => input.setCustomValidity("")));
-    } else {
-      skipped.delete(step.key);
-      const screen = screens.children[[...screens.children].findIndex(node => node.dataset.question === step.id)];
-      const control = screen?.querySelector("input:not([type=checkbox]):not([type=radio]), select");
-      if (control && !control.checkValidity()) { control.reportValidity(); return; }
-      if (step.id === "down-payment" && Number(byId("down-payment").value) > Number(byId("total-funds").value)) {
-        byId("down-payment").setCustomValidity("The planned down payment cannot exceed your available savings.");
-        byId("down-payment").reportValidity(); return;
-      }
-      byId("down-payment").setCustomValidity("");
     }
-    const updated = visibleSteps();
-    if (current === updated.length - 1) { needsForm.requestSubmit(); return; }
-    current = Math.min(current + 1, updated.length - 1);
+    if (group.some(step => step.id === "down-payment") && Number(byId("down-payment").value) > Number(byId("total-funds").value)) {
+      byId("down-payment").setCustomValidity("The planned down payment cannot exceed your available savings.");
+      byId("down-payment").reportValidity(); return;
+    }
+    if (current === pageCount() - 1) {
+      if (Number(byId("down-payment").value) > Number(byId("total-funds").value)) {
+        current = Math.floor(visibleSteps().findIndex(step => step.id === "down-payment") / 3);
+        render(); byId("down-payment").focus(); return;
+      }
+      readNeedsForm(); return;
+    }
+    current = Math.min(current + 1, pageCount() - 1);
     render();
     const active = screens.querySelector(".question-step:not(.hidden)");
     active?.querySelector("input:not([type=checkbox]):not([type=radio]),select")?.focus({ preventScroll: true });
   }
   needsForm.addEventListener("submit", event => {
     event.preventDefault();
-    if (current < visibleSteps().length - 1) { moveNext(false); return; }
-    if (Number(byId("down-payment").value) > Number(byId("total-funds").value)) {
-      byId("down-payment").setCustomValidity("The planned down payment cannot exceed your available savings.");
-      byId("down-payment").reportValidity(); current = visibleSteps().findIndex(s => s.id === "down-payment"); render(); return;
-    }
-    byId("down-payment").setCustomValidity("");
-    readNeedsForm();
+    moveNext(false);
   });
-  byId("wizard-next").addEventListener("click", () => current === visibleSteps().length - 1
-    ? needsForm.requestSubmit() : moveNext(false));
+  byId("wizard-next").addEventListener("click", () => moveNext(false));
   byId("wizard-skip").addEventListener("click", () => moveNext(true));
   byId("wizard-back").addEventListener("click", () => { current = Math.max(0, current - 1); render(); });
-  needsForm.addEventListener("input", event => event.target.setCustomValidity?.(""));
+  needsForm.addEventListener("input", event => {
+    event.target.setCustomValidity?.("");
+    const question = event.target.closest("[data-question]");
+    if (question) {
+      skipped.delete(steps.find(step => step.id === question.dataset.question).key);
+      question.classList.remove("question-skipped");
+      question.querySelector(".question-skip").textContent = "Skip";
+    }
+  });
   byId("current-vehicle-status").addEventListener("change", () => {
     byId("current-loan-fields").classList.toggle("hidden", byId("current-vehicle-status").value !== "loan");
     byId("current-lease-fields").classList.toggle("hidden", byId("current-vehicle-status").value !== "lease");
+    render();
   });
   document.querySelectorAll(".check-row input[type=checkbox]").forEach(input => {
     input.closest(".check-row")?.setAttribute("data-wizard-checkbox", "true");
@@ -168,6 +188,8 @@
     reset() { skipped.clear(); current = 0; render(); },
     restart() { current = 0; render(); },
     skipped() { return [...skipped]; },
+    setSkipped(keys) { skipped.clear(); keys.forEach(key => skipped.add(key)); },
+    goTo(id) { current = Math.floor(visibleSteps().findIndex(step => step.id === id) / 3); render(); },
     finish: () => needsForm.requestSubmit(),
   };
 })();

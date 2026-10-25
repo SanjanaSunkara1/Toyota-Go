@@ -16,7 +16,7 @@
         state.animationFrame = requestAnimationFrame(updateDrive);
       }
     }
-    document.querySelector("#home-overview").classList.toggle("hidden", !state.profile);
+    document.querySelector("#home-overview").classList.remove("hidden");
     if (page === "home" && !state.profile) document.querySelector("#auth-shell").classList.remove("hidden");
     document.querySelectorAll(".page-view").forEach(section => {
       section.classList.toggle("hidden", section.dataset.view !== page);

@@ -8,9 +8,11 @@ PUBLIC = {
     "/", "/index.html", "/styles.css", "/cars.js", "/game.js",
     "/insights-model.js", "/insights.js", "/branding.js",
     "/wizard.js", "/navigation.js", "/safety-page.js", "/experience.css",
+    "/catalog.js", "/revision.css", "/home-hero.js", "/filters.js", "/insurance.js", "/tss.js",
     "/assets/toyota-logo.svg",
     "/attached_assets/0_Screen_Shot_2026-10-25_at_12.55.02_AM_1792907721806.png",
     "/attached_assets/image_1792909171658.png",
+    "/attached_assets/Two-people-in-a-dealership-showroom-sitting-with-a-finance-ad_1792913602649.avif",
 }
 
 

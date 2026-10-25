@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="experience.css">
+    <link rel="stylesheet" href="revision.css">
+    <script src="catalog.js" defer></script>
     <script src="cars.js" defer></script>
     <script src="insights-model.js" defer></script>
     <script src="insights.js" defer></script>
@@ -22,7 +24,11 @@
     <script src="branding.js" defer></script>
     <script src="wizard.js" defer></script>
     <script src="navigation.js" defer></script>
+    <script src="home-hero.js" defer></script>
     <script src="safety-page.js" defer></script>
+    <script src="filters.js" defer></script>
+    <script src="insurance.js" defer></script>
+    <script src="tss.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -70,10 +76,11 @@
 
       <section id="customization-page" class="page-view hidden" data-view="customization" aria-label="Find and customize your Toyota">
       <section class="needs-shell hidden" id="needs-shell" aria-labelledby="needs-title">
-        <div class="needs-intro"><p class="eyebrow">FIND YOUR TOYOTA · ONE STEP AT A TIME</p><h1 id="needs-title">What does your<br>perfect Toyota <em>look like?</em></h1><p>Answer one short question at a time. Skip anything you’d rather not use as a filter.</p></div>
+        <div class="needs-intro"><p class="eyebrow">FIND YOUR TOYOTA · A FEW QUESTIONS AT A TIME</p><h1 id="needs-title">What does your<br>perfect Toyota <em>look like?</em></h1><p>Answer up to three questions per card. Skip any question you’d rather not use as a filter.</p></div>
         <form id="needs-form">
           <div class="wizard-progress" aria-live="polite"><div><strong id="wizard-step-label">Question 1 of 1</strong><span id="wizard-step-title"></span></div><div class="wizard-track"><i id="wizard-progress-fill"></i></div></div>
           <div id="question-wizard" class="question-wizard"></div>
+          <input id="model-filter" type="hidden" value="any"><input id="year-filter" type="hidden" value="any">
           <div class="wizard-actions"><button class="text-button" id="wizard-back" type="button">Back</button><div><button class="skip-button" id="wizard-skip" type="button">Skip this question</button><button class="primary-button" id="wizard-next" type="button">Next</button></div></div>
           <div class="needs-grid">
             <fieldset class="needs-card finance-card"><legend><span>01</span> Your budget</legend>
@@ -103,7 +110,7 @@
             </fieldset>
             <fieldset class="needs-card"><legend><span>03</span> Your everyday</legend>
               <label class="form-field">How many people ride with you?
-                <select id="passengers"><option value="1">Mostly just me</option><option value="2" selected>Usually 2 people</option><option value="4">3–4 people</option><option value="5">5 or more people</option></select>
+                <select id="passengers"><option value="1">At least 1 seat</option><option value="2" selected>At least 2 seats</option><option value="3">At least 3 seats</option><option value="4">At least 4 seats</option><option value="5">At least 5 seats</option><option value="6">At least 6 seats</option><option value="7">At least 7 seats</option><option value="8">At least 8 seats</option></select>
               </label>
               <label class="form-field">What kind of driving?
                 <select id="driving-style"><option value="mixed">A mix of city and highway</option><option value="city">Mostly city / commuting</option><option value="highway">Mostly highway / long trips</option><option value="adventure">Weekend adventures and gear</option></select>
@@ -152,11 +159,9 @@
         <div class="intro-copy">
           <p class="eyebrow" id="recommendation-eyebrow">YOUR PERSONALIZED TOYOTA SHORTLIST</p>
           <h1 id="page-title">Your Toyota<br><em>matches.</em></h1>
-          <p class="intro-text" id="recommendation-intro">Based on your budget and priorities, here are a few Toyotas to explore. Open Toyota's official model page for current trims, features, and pricing.</p>
+          <p class="intro-text hidden" id="recommendation-intro"></p>
           <div class="trip-meta">
-            <span><span class="meta-icon">⌁</span> 3 test-drive adventures</span>
-            <span><span class="meta-icon">◷</span> About 5 minutes</span>
-            <button class="intro-edit-button hidden" id="edit-preferences" type="button">Adjust my answers</button>
+            <button class="intro-edit-button hidden" id="edit-preferences" type="button">Filters</button>
           </div>
         </div>
         <div class="hero-art" aria-label="Illustration of a car driving through a mountain landscape">
@@ -199,7 +204,8 @@
               <p class="heading-note">Choose a car to see the numbers<br>and take it for a spin.</p>
             </div>
             <p class="match-status" id="recommendation-count"></p>
-            <div class="no-matches hidden" id="no-matches"><strong>No Toyotas match those limits just yet.</strong><p>Edit your budget, savings, payment preference, or annual mileage to widen the list.</p><button class="text-button" id="edit-needs" type="button">Edit my needs</button></div>
+            <p class="field-caption catalog-source">43 U.S. model-year entries · <a href="https://www.toyota.com/all-vehicles/" target="_blank" rel="noopener noreferrer">Toyota lineup</a>, checked October 25, 2026. Manufacturer catalog, not live dealer stock. Starting prices exclude delivery; seating/options depend on trim.</p>
+            <div class="no-matches hidden" id="no-matches"><strong>No Toyotas match those limits just yet.</strong><p>Change or clear your filters to widen the list.</p><button class="text-button" id="edit-needs" type="button">Change filters</button></div>
             <div class="car-grid" id="car-grid"></div>
             <button class="text-button hidden" id="show-all" type="button"></button>
             <div class="plan-heading">
@@ -269,7 +275,7 @@
       </section>
 
       <section id="safety-page" class="page-view safety-page hidden" data-view="safety" aria-labelledby="safety-page-title">
-        <div class="safety-intro"><p class="eyebrow">CONFIDENCE ON EVERY DRIVE</p><h1 id="safety-page-title">Vehicle safety &amp;<br><em>sustainability.</em></h1><p>Explore illustrative driver-awareness concepts, model-year-specific award sources, Toyota’s electrified lineup, and its published environmental goals.</p></div>
+        <div class="safety-intro"><p class="eyebrow">CONFIDENCE ON EVERY DRIVE</p><h1 id="safety-page-title">Vehicle safety &amp;<br><em>sustainability.</em></h1><p>Explore illustrative driver awareness concepts, model to year specific award sources, Toyota’s electrified lineup, and its published environmental goals.</p></div>
         <section class="safety-demo-section" aria-labelledby="safety-demo-title">
           <p class="eyebrow">INTERACTIVE LEARNING DEMO</p><h2 id="safety-demo-title">See a driver-assistance moment</h2>
           <p>This simplified 2D animation shows a vehicle slowing for a pedestrian. It is not Toyota vehicle software, a sensor test, or a promise that a collision will be avoided.</p>

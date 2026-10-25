@@ -1,0 +1,363 @@
+.insurance-providers { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.insurance-providers a { color: #b91924; font-size: 13px; }
+#insurance-workspace .results-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+#insurance-dialog .compare-scroll { max-width: 100%; overflow: auto; margin-top: 24px; }
+#insurance-dialog table { min-width: 900px; }
+#insurance-dialog { width: min(1100px, calc(100vw - 28px)); max-height: 90dvh; overflow: auto; }
+#insurance-dialog .primary-button, #insurance-panel .primary-button { background: #c9141d; }
+#insurance-quote-form { padding: 18px; border: 1px solid #dedbd5; border-radius: 6px; }
+#insurance-workspace small { display: block; color: #6d706b; }
+#tss-generation-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+#tss-generation-tabs button { padding: 10px 14px; border: 1px solid #d7d8cf; border-radius: 4px; background: #fafaf6; cursor: pointer; }
+#tss-generation-tabs [aria-selected="true"] { background: #c9141d; color: white; border-color: #c9141d; }
+#tss-demo-scene svg { display: block; width: 100%; }
+.question-skipped { opacity: .72; }
+.question-skip { flex-shrink: 0; min-height: 34px; padding: 6px 12px; border: 1px solid #dedbd4; background: #faf9f6; border-radius: 4px; cursor: pointer; }
+.filter-actions { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px; }
+#results-filters > form > .field-caption { padding: 0 20px 18px; }
+#results-filters select, #insurance-dialog input, #insurance-dialog select { max-width: 100%; min-width: 0; }
+#insurance-dialog .compare-head { flex-wrap: wrap; }
+/* Toyota Go — focused finish pass
+   Editorial utility: warm stone, soft sage, with Toyota red reserved for key decisions. */
+:root {
+  --go-red: #c9141d;
+  --go-red-dark: #a90f17;
+  --go-red-soft: #f9e9e8;
+  --go-paper: #f8f6f1;
+  --go-ink: #302e2a;
+  --go-muted: #74736d;
+  --go-line: #e2dfd7;
+}
+
+/* Home: actual Toyota dealership finance conversation, before any quiz state. */
+.home-dealership-hero {
+  position: relative;
+  width: 100vw;
+  height: clamp(250px, 39vw, 430px);
+  max-height: 52vh;
+  min-height: 230px;
+  margin: 0 calc(50% - 50vw) 0;
+  overflow: hidden;
+  background: #dedbd4;
+}
+.home-dealership-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 48%;
+}
+.home-dealership-hero::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 24%;
+  content: "";
+  background: linear-gradient(transparent, #231d1830);
+  pointer-events: none;
+}
+.home-overview {
+  max-width: 780px;
+  padding: clamp(30px, 5vw, 58px) 0 clamp(27px, 4vw, 48px);
+}
+.home-overview h1 em { color: var(--go-red); }
+.home-overview .eyebrow { color: var(--go-red); }
+.home-overview .primary-button {
+  border-color: var(--go-red);
+  background: var(--go-red);
+}
+.home-overview .primary-button:hover { background: var(--go-red-dark); }
+
+/* Red is a deliberate signpost for the requested match and decision moments. */
+.page-view[data-view="customization"] .intro h1 em { color: var(--go-red); }
+.page-view[data-view="customization"] #start-drive,
+.page-view[data-view="customization"] #open-compare {
+  border-color: var(--go-red);
+  background: var(--go-red);
+  color: #fff;
+}
+.page-view[data-view="customization"] #start-drive:hover,
+.page-view[data-view="customization"] #open-compare:hover {
+  border-color: var(--go-red-dark);
+  background: var(--go-red-dark);
+}
+.page-view[data-view="customization"] .compare-toggle {
+  border-color: #d9a3a3;
+  color: var(--go-red);
+}
+.page-view[data-view="customization"] .compare-toggle.on {
+  border-color: var(--go-red);
+  background: var(--go-red);
+  color: #fff;
+}
+.page-view[data-view="customization"] .compare-dialog .primary-button {
+  border-color: var(--go-red);
+  background: var(--go-red);
+}
+.page-view[data-view="customization"] .compare-dialog .primary-button:hover {
+  border-color: var(--go-red-dark);
+  background: var(--go-red-dark);
+}
+.page-view[data-view="customization"] .compare-dialog .text-button,
+.page-view[data-view="customization"] .compare-dialog #compare-status,
+.page-view[data-view="customization"] .compare-dialog .best-tag { color: var(--go-red); }
+
+#deal-insights .insight-header .eyebrow { color: var(--go-red); }
+#deal-insights .benefit-score .eyebrow,
+#deal-insights .benefit-score .score-number,
+#deal-insights .retention-summary strong { color: var(--go-red); }
+#deal-insights .insight-table th {
+  color: var(--go-red);
+}
+#deal-insights .insight-table thead th {
+  background: #f8e9e8;
+}
+
+/* Three-at-a-time question flow: a single calm surface with clear question rhythm. */
+.question-wizard {
+  max-width: 840px;
+  min-height: 0;
+  padding: clamp(7px, 1.3vw, 15px) clamp(16px, 3vw, 30px);
+  border: 1px solid var(--go-line);
+  border-radius: 6px;
+  background: #fffefa;
+  box-shadow: 0 12px 34px #40392d08;
+}
+.question-wizard .question-step {
+  min-height: 0;
+  padding: 20px 4px;
+  border: 0;
+  border-bottom: 1px solid #ebe8e1;
+  border-radius: 0;
+  background: transparent;
+  animation: question-arrive .28s ease both;
+}
+.question-wizard .question-step:last-child { border-bottom: 0; }
+.question-wizard .question-step .question-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 13px;
+  color: var(--go-ink);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(17px, 2vw, 21px);
+  line-height: 1.3;
+}
+.question-wizard .question-step .form-field {
+  max-width: none;
+  margin: 10px 0;
+}
+.question-wizard .question-step .field-caption { max-width: none; }
+.question-wizard .question-step .check-row { max-width: none; }
+.question-wizard .question-skip {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 4px 9px;
+  border: 1px solid #e5d8d4;
+  border-radius: 3px;
+  background: #fffefa;
+  color: #8e4e4d;
+  font: 700 10px "DM Sans", sans-serif;
+  cursor: pointer;
+}
+.question-wizard .question-skip:hover {
+  border-color: #d7a5a1;
+  background: #fbefed;
+  color: var(--go-red-dark);
+}
+.question-wizard .question-skip:focus-visible {
+  outline: 2px solid #d88381;
+  outline-offset: 2px;
+}
+@keyframes question-arrive {
+  from { opacity: .7; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Results filters: compact disclosure, with a clear apply/reset hierarchy. */
+#results-filters {
+  margin: 0 0 20px;
+  border: 1px solid var(--go-line);
+  border-radius: 5px;
+  background: #fbfaf7;
+}
+#results-filters > summary {
+  min-height: 48px;
+  padding: 14px 17px;
+  color: #4c514a;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  list-style-position: inside;
+}
+#results-filters[open] > summary {
+  border-bottom: 1px solid var(--go-line);
+  color: var(--go-red);
+}
+#results-filters .results-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px 18px;
+  padding: 12px 18px 17px;
+}
+#results-filters .results-filter-grid .form-field { margin: 8px 0; }
+#apply-results-filters {
+  min-height: 42px;
+  border-color: var(--go-red);
+  background: var(--go-red);
+}
+#apply-results-filters:hover { border-color: var(--go-red-dark); background: var(--go-red-dark); }
+#results-filters button[type="reset"],
+#results-filters #reset-results-filters,
+#results-filters .results-filter-reset {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #dcd9d1;
+  border-radius: 4px;
+  background: #f4f2ed;
+  color: #565850;
+  font: 700 12px "DM Sans", sans-serif;
+  cursor: pointer;
+}
+#results-filters button[type="reset"]:hover,
+#results-filters #reset-results-filters:hover,
+#results-filters .results-filter-reset:hover {
+  border-color: #c9c4b9;
+  background: #eeece5;
+}
+
+/* Vehicle safety & sustainability. */
+.safety-page .safety-intro h1 em { color: var(--go-red); }
+.safety-page .award-grid .award-card h3 { color: var(--go-red); }
+
+/* Insurance education panel, shared by the results and comparison experiences. */
+#insurance-dialog {
+  width: min(720px, calc(100vw - 30px));
+  max-width: 720px;
+  max-height: min(88dvh, 820px);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #dcd8d0;
+  border-radius: 8px;
+  background: #fbfaf7;
+  color: var(--go-ink);
+  box-shadow: 0 24px 80px #231d1850;
+}
+#insurance-dialog::backdrop { background: #28241f9c; backdrop-filter: blur(2px); }
+#insurance-panel {
+  position: relative;
+  padding: clamp(22px, 4vw, 36px);
+}
+#insurance-panel h2,
+#insurance-panel h3 { color: var(--go-ink); }
+#insurance-panel .eyebrow { color: var(--go-red); }
+#insurance-panel button:not(.text-button) {
+  border-color: var(--go-red);
+  background: var(--go-red);
+}
+#insurance-panel button:not(.text-button):hover {
+  border-color: var(--go-red-dark);
+  background: var(--go-red-dark);
+}
+#insurance-panel .text-button { color: var(--go-red); }
+
+/* TSS learning demo: restrained red controls, calm scene, visible active tab. */
+#tss-generation-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 16px 0;
+}
+#tss-generation-tabs button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #dcd9d1;
+  border-radius: 999px;
+  background: #fbfaf7;
+  color: #5f625b;
+  font: 700 11px "DM Sans", sans-serif;
+  cursor: pointer;
+}
+#tss-generation-tabs button[aria-selected="true"],
+#tss-generation-tabs button.active {
+  border-color: var(--go-red);
+  background: var(--go-red-soft);
+  color: var(--go-red);
+}
+#tss-feature-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d9d6ce;
+  border-radius: 4px;
+  background: #fffefa;
+  color: #393b35;
+  font: 500 13px "DM Sans", sans-serif;
+}
+#tss-feature-select:focus-visible {
+  outline: 2px solid #d88381;
+  outline-offset: 2px;
+  border-color: var(--go-red);
+}
+#tss-demo-scene {
+  position: relative;
+  min-height: 190px;
+  overflow: hidden;
+  border: 1px solid #dcd9d1;
+  border-radius: 5px;
+  background-color: #eeece5;
+  background-image: linear-gradient(180deg, #e9e6dd 0 44%, #d7d3c9 44% 46%, #686b67 46% 83%, #d7d3c9 83% 85%, #e9e6dd 85%);
+  animation: tss-scene-arrive .45s ease both;
+}
+#tss-demo-scene::after {
+  position: absolute;
+  right: 0;
+  bottom: 34%;
+  left: 0;
+  height: 2px;
+  content: "";
+  background: repeating-linear-gradient(90deg, #f5f0df 0 28px, transparent 28px 48px);
+  opacity: .8;
+}
+#tss-demo-scene [data-animate],
+#tss-demo-scene .tss-demo-car,
+#tss-demo-scene .tss-car {
+  animation: tss-motion 4s ease-in-out infinite alternate;
+}
+@keyframes tss-motion {
+  from { transform: translateX(0); }
+  to { transform: translateX(12px); }
+}
+@keyframes tss-scene-arrive {
+  from { opacity: .75; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 800px) {
+  .question-wizard { max-width: 100%; }
+  #results-filters .results-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .home-dealership-hero {
+    height: clamp(215px, 63vw, 300px);
+    min-height: 215px;
+    max-height: none;
+  }
+  .home-dealership-hero img { object-position: center center; }
+  .home-overview { padding: 28px 0 32px; }
+  .question-wizard { padding: 5px 13px; }
+  .question-wizard .question-step { padding: 17px 0; }
+  .question-wizard .question-step .question-heading { align-items: flex-start; }
+  .question-wizard .question-skip { font-size: 9px; }
+  #results-filters .results-filter-grid { grid-template-columns: 1fr; gap: 0; padding: 9px 14px 15px; }
+  #results-filters .results-filter-grid .form-field { margin: 6px 0; }
+  #insurance-panel { padding: 22px 17px; }
+  #tss-demo-scene { min-height: 145px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .question-wizard .question-step,
+  #tss-demo-scene [data-animate],
+  #tss-demo-scene,
+  #tss-demo-scene .tss-demo-car,
+  #tss-demo-scene .tss-car { animation: none !important; }
+}

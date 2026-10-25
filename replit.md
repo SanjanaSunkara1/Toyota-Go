@@ -15,13 +15,22 @@ use external Google/Toyota hosts; the branding image and logo are local.
 - Toyota Go branding and tagline: **To You Total Assistance**.
 - Demo signup/login only. Passwords are not saved or sent.
 - Budget/needs filters, Toyota shortlist, up to three-car comparison, payment plans and driving games.
-- Skippable, one-question-at-a-time preferences with body-style, paint preference and mileage questions.
+- Skippable grouped preferences (up to three questions per card), with body style,
+  paint preference, exact seating capacity and mileage questions.
+- Full 43-entry U.S. model-year manufacturer catalog snapshot, sourced from Toyota's
+  all-vehicles page on October 25, 2026. Not a live dealer inventory feed.
+- Results show all matches, with dropdown filters for model, year, type, finance,
+  powertrain and capacity, plus sorting. Paint is not a verified stock filter.
 - Conditional current loan/lease questions; estimated current equity, payment baseline,
   lease maturity, and already-incurred mileage overage using the customer's optional contract rate.
 - Home, Customization, and Vehicle Safety & Sustainability navigation.
-- Public illustrative 2D safety animation, sourced IIHS model-year awards, electrified-model
+- Public illustrative 2D TSS generation/feature animations, sourced IIHS model-year awards, electrified-model
   exploration, and Toyota environmental facts/goals with source links.
-- Customization uses neutral/evergreen styling; Toyota red is reserved for the top bar.
+- Warm neutral styling with requested Toyota red accents for key actions, headings,
+  comparison state, annual-value table headings and selected safety titles.
+- Insurance comparison uses official quote-site links and customer-entered offers only;
+  no live insurance feed, verification, policy binding or invented premiums. Premiums
+  are shown separately from the Deal Benefit Score/game budget and held only in memory.
 - Instant Deal Benefit Score and five-year retained-value/net-equity scenarios.
 - Safety is illustrative assist-feature coverage, not crash performance.
 - Environmental comparison is tailpipe CO₂, not lifecycle emissions.
@@ -39,6 +48,8 @@ use external Google/Toyota hosts; the branding image and logo are local.
 ## Verify
 
 `node --test tests/deal-model.test.cjs`
+
+`node --test tests/catalog.test.cjs`
 
 `python3 tests/browser_smoke.py`
 

@@ -122,7 +122,9 @@ function planIsAffordable(car, plan) {
 
 function meetsNeeds(car) {
   const p = state.profile, green = car.hybrid || car.ev || car.fcev;
-  const seatsNeeded = p.childSeats || p.passengers >= 4 ? 5 : p.passengers;
+  if (p.modelFamily && p.modelFamily !== "any" && car.family !== p.modelFamily) return false;
+  if (p.modelYear && p.modelYear !== "any" && car.year !== Number(p.modelYear)) return false;
+  const seatsNeeded = Math.max(p.childSeats ? 5 : 1, p.passengers);
   if (p.bodyStyle && p.bodyStyle !== "any" && car.body !== p.bodyStyle) return false;
   if (car.seats < seatsNeeded || (p.childSeats && car.body === "coupe")) return false;
   if (p.awd && !car.awd) return false;
@@ -135,7 +137,7 @@ function meetsNeeds(car) {
 }
 
 function requirementChips(car, plan) {
-  const p = state.profile, need = p.childSeats || p.passengers >= 4 ? 5 : p.passengers;
+  const p = state.profile, need = Math.max(p.childSeats ? 5 : 1, p.passengers);
   const pay = monthlyPayment(car, plan);
   const skipped = p.skippedQuestions || [];
   const chips = [skipped.includes("max-price") ? `Price ${dollars(car.price)} · no price filter` : `Price ${dollars(car.price)} ≤ ${dollars(p.maxPrice)} max`,
@@ -230,6 +232,7 @@ function renderCars() {
     button.addEventListener("click", () => {
       state.car = state.matches.find((car) => car.id === button.dataset.car);
       renderSetup();
+      window.ToyotaInsurance?.prompt(state.car);
     });
   });
 }
@@ -274,6 +277,7 @@ function renderSetup() {
   document.querySelector("#annual-mile-value").textContent = `${state.profile.annualMiles.toLocaleString("en-US")} mi / yr${state.profile.skippedQuestions?.includes("mileage") ? " (example)" : ""}`;
   document.querySelector("#fit-copy").textContent = `${state.car.fit} ${state.profile.awd && state.car.awd ? "Matches your interest in available AWD." : ""}`;
   renderDealInsights();
+  window.ToyotaInsurance?.render();
 }
 
 function syncShowAll() {
@@ -301,6 +305,8 @@ function readNeedsForm() {
     downPayment,
     bodyStyle: document.querySelector("#car-type-filter").value,
     paintColor: document.querySelector("#paint-color").value,
+    modelFamily: document.querySelector("#model-filter").value,
+    modelYear: document.querySelector("#year-filter").value,
     skippedQuestions: ToyotaWizard.skipped(),
     annualMiles: Number(document.querySelector("#annual-miles").value),
     creditTier: document.querySelector("#credit-tier").value,
@@ -339,8 +345,12 @@ function readNeedsForm() {
     ? plans.some((plan) => planIsAffordable(car, plan))
     : planIsAffordable(car, getPlan(preferredPlan))));
   state.allMatches.sort((a, b) => matchScore(b) - matchScore(a));
-  state.matches = state.allMatches.slice(0, 6);
+  state.matches = [...state.allMatches];
+  document.querySelector(".money-panel").classList.toggle("hidden", state.matches.length === 0);
+  renderCompareTray();
   if (state.matches.length === 0) {
+    document.querySelector("#car-grid").replaceChildren();
+    document.querySelector("#plan-grid").replaceChildren();
     const needOnly = cars.filter(meetsNeeds).length;
     document.querySelector("#no-matches p").textContent = needOnly
       ? `${needOnly} Toyotas fit your seating, drivetrain and fuel needs, but none fit your price, payment and savings limits together. Try a higher payment limit, more savings or down payment, or a higher max price.`
@@ -364,9 +374,6 @@ function readNeedsForm() {
     step.classList.toggle("active", index === 0);
     step.classList.remove("done");
   });
-  const name = state.name ? `, ${state.name.split(/\s+/)[0]}` : "";
-  document.querySelector("#recommendation-intro").textContent =
-    `Here are the Toyotas that fit your price and payment guardrails${name}. Demo prices and payments are estimates; check Toyota for current trims, features, and pricing.`;
   document.querySelector("#auth-shell").classList.add("hidden");
   document.querySelector("#needs-shell").classList.add("hidden");
   document.querySelector(".intro").classList.remove("hidden");
@@ -379,6 +386,7 @@ function readNeedsForm() {
   navigateToPage("customization");
   if (state.matches.length) renderSetup();
   else document.querySelector("#deal-insights").innerHTML = '<p class="insight-empty">Adjust your filters to find a vehicle before calculating a Deal Benefit Score.</p>';
+  document.dispatchEvent(new Event("toyota:matches"));
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -952,6 +960,7 @@ function compareRows() {
     ["Modeled tailpipe CO₂ / year (not lifecycle)", (c) => `${Math.round(DealModel.emissions(c, p.annualMiles)).toLocaleString()} kg`],
     ["Assumed annual maintenance", () => dollars(dealScenario().toyotaMaintenance)],
     ["Your requirements met", (c) => requirementChips(c, plan(c)).map((t) => `✓ ${t}`).join("<br>")],
+    ...(window.ToyotaInsurance?.rows() || []),
     ["Official page", (c) => `<a href="${c.url}" target="_blank" rel="noopener noreferrer">${c.url.replace("https://www.", "")} ↗</a>`],
   ];
 }
@@ -966,7 +975,7 @@ function renderCompareTray() {
 function openCompare() {
   const list = compareList();
   if (list.length < 2) return;
-  const head = `<tr><th></th>${list.map((c) => `<th><div class="cmp-img">${carIllustration(c)}</div>Toyota ${c.name}<button class="text-button" type="button" data-pick="${c.id}">Choose this car</button></th>`).join("")}</tr>`;
+  const head = `<tr><th></th>${list.map((c) => `<th><div class="cmp-img">${carIllustration(c)}</div>${c.year} Toyota ${c.name}<button class="text-button" type="button" data-pick="${c.id}">Choose this car</button></th>`).join("")}</tr>`;
   const body = compareRows().map(([label, show, num, dir]) => {
     const vals = list.map((c) => (num ? num(c) : 0));
     const best = num ? (dir === "min" ? Math.min(...vals) : Math.max(...vals)) : null;
@@ -981,6 +990,7 @@ function openCompare() {
     state.car = cars.find((c) => c.id === button.dataset.pick);
     document.querySelector("#compare-dialog").close();
     renderSetup();
+    window.ToyotaInsurance?.prompt(state.car);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }));
   document.querySelector("#compare-dialog").showModal();
@@ -1035,6 +1045,7 @@ function saveResults() {
 }
 
 function showNeeds() {
+  window.ResultsFilters?.hide();
   cancelAnimationFrame(state.animationFrame);
   state.drive = null;
   document.querySelector("#auth-shell").classList.add("hidden");
@@ -1084,6 +1095,8 @@ function resetGame() {
   document.querySelector("#auth-form").reset();
   document.querySelector("#needs-form").reset();
   ToyotaWizard?.reset();
+  window.ToyotaInsurance?.reset();
+  window.ResultsFilters?.hide();
   setAuthMode("signup");
   document.querySelector("#auth-shell").classList.remove("hidden");
   document.querySelector("#needs-shell").classList.add("hidden");
@@ -1109,8 +1122,8 @@ document.querySelector("#auth-form").addEventListener("submit", (event) => {
   document.querySelector("#account-password").value = "";
   showNeeds();
 });
-document.querySelector("#edit-needs").addEventListener("click", showNeeds);
-document.querySelector("#start-drive").addEventListener("click", startDrive);
+document.querySelector("#edit-needs").addEventListener("click", () => window.ResultsFilters?.open());
+document.querySelector("#start-drive").addEventListener("click", () => window.ToyotaInsurance ? ToyotaInsurance.beforeDrive(startDrive) : startDrive());
 document.querySelector("#show-all").addEventListener("click", () => {
   state.matches = state.allMatches;
   document.querySelector("#recommendation-count").textContent = `${state.matches.length} possible matches · based on your answers`;
@@ -1128,7 +1141,7 @@ document.querySelector("#copy-results").addEventListener("click", copyResults);
 document.querySelector("#save-results").addEventListener("click", saveResults);
 document.querySelector("#print-results").addEventListener("click", () => window.print());
 document.querySelector("#replay-button").addEventListener("click", showNeeds);
-document.querySelector("#edit-preferences").addEventListener("click", showNeeds);
+document.querySelector("#edit-preferences").addEventListener("click", () => window.ResultsFilters?.open());
 window.addEventListener("keydown", (event) => {
   if (!state.drive || state.drive.finished || state.drive.paused) return;
   const key = event.key.toLowerCase();
