@@ -19,16 +19,26 @@
     <script src="insights.js" defer></script>
     <script src="game.js" defer></script>
     <script src="branding.js" defer></script>
+    <script src="wizard.js" defer></script>
+    <script src="navigation.js" defer></script>
+    <script src="safety-page.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="topbar">
       <a class="brand" href="#" aria-label="Toyota Go home"><img class="brand-logo" src="assets/toyota-logo.svg" alt="Toyota logo"> Toyota Go</a>
       <div class="top-note">To You Total Assistance</div>
-      <button class="reset-button" id="reset-button" type="button">Start over</button>
+      <button class="menu-button" id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-menu"><span></span><span></span><span></span></button>
+      <nav class="site-menu hidden" id="site-menu" aria-label="Main navigation">
+        <button type="button" data-page="home" aria-current="page">Home</button>
+        <button type="button" data-page="customization">Customization</button>
+        <button type="button" data-page="safety">Vehicle safety &amp; sustainability</button>
+        <button type="button" id="reset-button">Start over</button>
+      </nav>
     </header>
 
     <main id="main" tabindex="-1">
+      <section id="home-page" class="page-view" data-view="home" aria-label="Home">
       <section class="auth-shell" id="auth-shell" aria-labelledby="auth-title">
         <div class="auth-art">
           <div class="auth-sun"></div><div class="auth-hills"></div>
@@ -51,10 +61,15 @@
           <p class="prototype-note"><span>ⓘ</span> Demo account flow only. No password is saved or sent anywhere.</p>
         </form>
       </section>
+      </section>
 
+      <section id="customization-page" class="page-view hidden" data-view="customization" aria-label="Find and customize your Toyota">
       <section class="needs-shell hidden" id="needs-shell" aria-labelledby="needs-title">
-        <div class="needs-intro"><p class="eyebrow">STEP 1 · YOUR NEEDS</p><h1 id="needs-title">What does your<br>perfect Toyota <em>look like?</em></h1><p>Just the basics. Use rough estimates—this is a learning demo, not a credit application.</p></div>
+        <div class="needs-intro"><p class="eyebrow">FIND YOUR TOYOTA · ONE STEP AT A TIME</p><h1 id="needs-title">What does your<br>perfect Toyota <em>look like?</em></h1><p>Answer one short question at a time. Skip anything you’d rather not use as a filter.</p></div>
         <form id="needs-form">
+          <div class="wizard-progress" aria-live="polite"><div><strong id="wizard-step-label">Question 1 of 1</strong><span id="wizard-step-title"></span></div><div class="wizard-track"><i id="wizard-progress-fill"></i></div></div>
+          <div id="question-wizard" class="question-wizard"></div>
+          <div class="wizard-actions"><button class="text-button" id="wizard-back" type="button">Back</button><div><button class="skip-button" id="wizard-skip" type="button">Skip this question</button><button class="primary-button" id="wizard-next" type="button">Next</button></div></div>
           <div class="needs-grid">
             <fieldset class="needs-card finance-card"><legend><span>01</span> Your budget</legend>
               <label class="form-field">Maximum vehicle price <span class="input-suffix"><span>$</span><input id="max-price" type="number" min="10000" max="100000" step="1000" value="38000" required></span></label>
@@ -93,6 +108,35 @@
               </label>
             </fieldset>
           </div>
+          <fieldset id="customization-fields" class="needs-card hidden">
+            <legend>Vehicle preferences</legend>
+            <label class="form-field">What type of Toyota are you looking for?
+              <select id="car-type-filter"><option value="any">I'm open to body styles</option><option value="sedan">Sedan</option><option value="hatch">Hatchback</option><option value="suv">SUV / crossover</option><option value="bigsuv">Three-row SUV</option><option value="truck">Pickup</option><option value="van">Minivan</option><option value="coupe">Sports coupe</option></select>
+            </label>
+            <label class="form-field">What color would you like?
+              <select id="paint-color"><option value="Any color">Any color</option><option value="White">White</option><option value="Black">Black</option><option value="Silver">Silver</option><option value="Gray">Gray</option><option value="Red">Red</option><option value="Blue">Blue</option><option value="Green">Green</option><option value="Earth tones">Earth tones</option></select>
+            </label>
+            <p class="field-caption">Paint availability depends on model, grade, year and dealer inventory. Your color choice is a preference, not a live inventory guarantee.</p>
+          </fieldset>
+          <fieldset id="vehicle-preference-fields" class="needs-card hidden">
+            <legend>Your current vehicle</legend>
+            <label class="form-field">Which best describes you?<select id="current-vehicle-status"><option value="none">No current loan or lease</option><option value="loan">I have a vehicle loan</option><option value="lease">I currently lease</option></select></label>
+            <label class="form-field" id="trade-intent-field">Would you consider selling or trading it?<select id="trade-intent"><option value="no">Not sure / not right now</option><option value="yes">Yes, possibly</option></select></label>
+            <div id="current-loan-fields" class="hidden">
+              <label class="form-field">Current monthly loan payment ($)<input id="current-loan-payment" type="number" min="0" max="5000" step="1" value="450"></label>
+              <label class="form-field">Loan payoff balance ($)<input id="current-loan-balance" type="number" min="0" max="200000" step="100" value="12000"></label>
+              <label class="form-field">Estimated current vehicle value ($)<input id="current-vehicle-value" type="number" min="0" max="200000" step="500" value="18000"><small class="field-caption">Use a rough estimate; a dealer appraisal determines actual trade-in value.</small></label>
+              <label class="form-field">Current loan APR (%)<input id="current-loan-apr" type="number" min="0" max="40" step="0.1" value="6.9"></label>
+              <label class="form-field">Remaining loan term (months)<input id="current-loan-term" type="number" min="1" max="480" step="1" value="36"></label>
+            </div>
+            <div id="current-lease-fields" class="hidden">
+              <label class="form-field">Current base monthly lease payment ($)<input id="current-lease-payment" type="number" min="0" max="5000" step="1" value="399"></label>
+              <label class="form-field">Lease maturity date<input id="lease-maturity" type="date"></label>
+              <label class="form-field">Current odometer mileage<input id="lease-current-mileage" type="number" min="0" max="500000" step="100" value="24000"></label>
+              <label class="form-field">Allowed mileage for the entire lease<input id="lease-allowed-mileage" type="number" min="0" max="500000" step="1000" value="30000"></label>
+              <label class="form-field">Residual / lease-end purchase option ($)<input id="lease-residual" type="number" min="0" max="200000" step="500" value="22000"></label>
+            </div>
+          </fieldset>
           <div class="needs-footer"><p class="prototype-note"><span>ⓘ</span> No Social Security number, bank details, or credit check. Your answers stay in this demo session.</p><button class="primary-button" type="submit">Find my Toyota matches <span>→</span></button></div>
         </form>
       </section>
@@ -214,6 +258,42 @@
         <p class="disclaimer">*Illustrative demo estimates only, not Toyota pricing or an offer. Vehicle prices, fuel economy used for calculations, rates, lease factor, resale value, maintenance, and road-trip costs are assumptions. Loan estimate uses an example APR mapped to your optional credit score range; real lenders use many factors and may offer different terms. No credit report or score is obtained. Lease estimate assumes 36 months and 10,000 miles per year. Three-year comparison uses your estimated annual mileage and includes estimated fuel, maintenance, and resale/remaining loan balance for purchases. Taxes, title and fees are assumed at 7% of the price for loan and cash purchases; prices marked ≈ are estimates (including a $1,500 allowance when you ask for AWD on models where it is optional), and Toyota’s delivery fee is not included. Confirm current prices, specifications, safety equipment, and terms on the official Toyota pages linked above.</p>
         <div class="ending-actions"><button class="primary-button" id="copy-results" type="button">Copy my results</button><button class="text-button" id="save-results" type="button">Save as text file</button><button class="text-button" id="print-results" type="button">Print / save as PDF</button><span id="save-status" role="status"></span></div>
         <button class="primary-button replay-button" id="replay-button" type="button">Try another Toyota <span>↗</span></button>
+      </section>
+      </section>
+
+      <section id="safety-page" class="page-view safety-page hidden" data-view="safety" aria-labelledby="safety-page-title">
+        <div class="safety-intro"><p class="eyebrow">CONFIDENCE ON EVERY DRIVE</p><h1 id="safety-page-title">Vehicle safety &amp;<br><em>sustainability.</em></h1><p>Explore illustrative driver-awareness concepts, model-year-specific award sources, Toyota’s electrified lineup, and its published environmental goals.</p></div>
+        <section class="safety-demo-section" aria-labelledby="safety-demo-title">
+          <p class="eyebrow">INTERACTIVE LEARNING DEMO</p><h2 id="safety-demo-title">See a driver-assistance moment</h2>
+          <p>This simplified 2D animation shows a vehicle slowing for a pedestrian. It is not Toyota vehicle software, a sensor test, or a promise that a collision will be avoided.</p>
+          <div class="safety-demo-scene">
+            <svg id="safety-simulation" viewBox="0 0 840 260" role="img" aria-labelledby="simulation-title simulation-desc">
+              <title id="simulation-title">Illustrative driver-assistance animation</title>
+              <desc id="simulation-desc">A car approaches a marked pedestrian crossing. Press Run simulation to animate a modeled stop before the crossing.</desc>
+              <rect width="840" height="260" fill="#e9ede9"/><rect x="0" y="96" width="840" height="126" rx="7" fill="#555c5d"/>
+              <path d="M0 158H840" stroke="#faf8e9" stroke-width="4" stroke-dasharray="28 22"/>
+              <g class="crosswalk"><path d="M550 98v124m24-124v124m24-124v124m24-124v124m24-124v124" stroke="white" stroke-width="10" opacity=".87"/></g>
+              <circle cx="708" cy="124" r="9" fill="#293a33"/><path d="M708 134v38m-14-18 14-10 14 12m-14 16-12 26m12-26 14 23" fill="none" stroke="#293a33" stroke-width="7" stroke-linecap="round"/>
+              <g class="safety-demo-car"><path d="M99 168l12-36c4-10 12-17 24-17h104c11 0 19 5 25 15l22 38 17 8v25H87v-20c0-7 4-12 12-13z" fill="#9da9ad"/><path d="m143 123-12 38h58v-42h-36c-5 0-8 1-10 4zm57-4v42h57l-20-33c-3-5-8-8-15-9z" fill="#dce7e8"/><circle cx="135" cy="196" r="16" fill="#263337"/><circle cx="245" cy="196" r="16" fill="#263337"/></g>
+              <circle class="detection-pulse" cx="286" cy="156" r="24" fill="none" stroke="#2d6b4d" stroke-width="4"/>
+              <text x="50" y="58" fill="#394844" font-size="15" font-weight="700">ILLUSTRATIVE SCENARIO · NOT A CRASH OR SENSOR TEST</text>
+            </svg>
+          </div>
+          <div class="safety-demo-controls"><button id="run-safety-simulation" class="primary-button" type="button">Run the simulation</button><button id="reset-safety-simulation" class="skip-button" type="button">Reset</button><span id="safety-simulation-status" role="status" aria-live="polite">Ready · follow the marked crossing.</span></div>
+        </section>
+        <section class="award-section" aria-labelledby="awards-title"><p class="eyebrow">INDEPENDENT SAFETY AWARDS</p><h2 id="awards-title">IIHS award examples by model year</h2><p>Safety awards belong to a specific model year and equipment configuration. Always verify the exact vehicle you are considering.</p>
+          <div class="award-grid">
+            <article class="award-card"><span class="award-year">2022 · TOP SAFETY PICK+</span><h3>Toyota RAV4 Prime</h3><a href="https://www.iihs.org/ratings/vehicle/toyota/rav4-prime-4-door-suv/2022" target="_blank" rel="noopener noreferrer">View IIHS model-year ratings ↗</a></article>
+            <article class="award-card"><span class="award-year">2023 · TOP SAFETY PICK+</span><h3>Toyota Highlander</h3><a href="https://www.iihs.org/ratings/vehicle/toyota/highlander-4-door-suv/2023" target="_blank" rel="noopener noreferrer">View IIHS model-year ratings ↗</a></article>
+            <article class="award-card"><span class="award-year">2025 · TOP SAFETY PICK+</span><h3>Toyota Tundra Crew Cab</h3><a href="https://www.iihs.org/ratings/vehicle/toyota/tundra-crew-cab-pickup/2025" target="_blank" rel="noopener noreferrer">View IIHS model-year ratings ↗</a></article>
+          </div>
+        </section>
+        <section class="electric-section" aria-labelledby="electric-title"><p class="eyebrow">ELECTRIFIED TOYOTA LINEUP</p><h2 id="electric-title">Explore ways to go electric</h2><p>Range, price and features vary by model year and trim. Refer to Toyota for current specifications.</p>
+          <div class="electric-tabs" role="tablist" aria-label="Filter electrified Toyota models">
+            <button type="button" role="tab" aria-selected="true" data-power="all">All electrified</button><button type="button" role="tab" aria-selected="false" data-power="ev">Battery electric</button><button type="button" role="tab" aria-selected="false" data-power="phev">Plug-in hybrid</button><button type="button" role="tab" aria-selected="false" data-power="hybrid">Hybrid</button><button type="button" role="tab" aria-selected="false" data-power="fcev">Fuel cell</button>
+          </div><div id="electric-grid" class="electric-grid"></div>
+        </section>
+        <section class="sustainability-section" aria-labelledby="sustainability-title"><p class="eyebrow">TOYOTA &amp; THE ENVIRONMENT</p><h2 id="sustainability-title">Did you know?</h2><div class="sustainability-fact" aria-live="polite"><strong id="sustainability-fact"></strong><p id="sustainability-source"></p></div><button class="skip-button" id="next-sustainability-fact" type="button">Explore another fact</button></section>
       </section>
       <dialog class="compare-dialog" id="compare-dialog" aria-label="Compare Toyotas">
         <div class="compare-head"><h2>Compare Toyotas</h2><div><button class="text-button" id="copy-compare" type="button">Copy comparison</button><span id="compare-status" role="status"></span><button class="primary-button" id="close-compare" type="button">Close</button></div></div>

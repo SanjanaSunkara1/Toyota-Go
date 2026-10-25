@@ -121,6 +121,7 @@ function planIsAffordable(car, plan) {
 function meetsNeeds(car) {
   const p = state.profile, green = car.hybrid || car.ev || car.fcev;
   const seatsNeeded = p.childSeats || p.passengers >= 4 ? 5 : p.passengers;
+  if (p.bodyStyle && p.bodyStyle !== "any" && car.body !== p.bodyStyle) return false;
   if (car.seats < seatsNeeded || (p.childSeats && car.body === "coupe")) return false;
   if (p.awd && !car.awd) return false;
   if (p.fuelInterest === "hybrid" && !green) return false;
@@ -204,6 +205,7 @@ function renderCars() {
       <div class="model-details"><span>SAFETY</span><p>${car.safety}</p><span>SPACE</span><p>${car.cargo}</p></div>
       <div class="car-price-row"><span>${car.est || car.awdAdded ? "Est. starting MSRP" : "Starting MSRP"}${car.awdAdded ? " with AWD" : ""}</span><strong>${car.est || car.awdAdded ? "≈ " : ""}${dollars(car.price)}</strong></div>
       <div class="car-price-row"><span>Fits your limits · ${bp.name}</span><strong>${bp.id === "cash" ? "No payment" : `${dollars(monthlyPayment(car, bp))}/mo`} · ${dollars(upfrontCost(car, bp))} due</strong></div>
+      <div class="paint-preview"><i style="background:${paintSwatch(state.profile.paintColor)}"></i><span>${state.profile.paintColor === "Any color" ? "Any exterior color" : `${state.profile.paintColor} color preference`}</span></div>
       <a class="official-link" href="${car.url}" target="_blank" rel="noopener noreferrer">Official Toyota details &amp; current pricing <span>↗</span></a>
       <button class="compare-toggle ${state.compare.includes(car.id) ? "on" : ""}" type="button" data-compare="${car.id}" aria-pressed="${state.compare.includes(car.id)}">${state.compare.includes(car.id) ? "✓ In comparison" : "+ Compare"}</button>
     </article>`; }).join("");
@@ -224,6 +226,10 @@ function renderCars() {
       renderSetup();
     });
   });
+}
+
+function paintSwatch(name) {
+  return ({ White: "#eeeae0", Black: "#242729", Silver: "#aeb1b3", Gray: "#777b7f", Red: "#bd3035", Blue: "#32628f", Green: "#49644e", "Earth tones": "#937861" })[name] || "#b8b7ae";
 }
 
 function renderPlans() {
@@ -286,6 +292,8 @@ function readNeedsForm() {
     monthlyCap,
     totalFunds,
     downPayment,
+    bodyStyle: document.querySelector("#car-type-filter").value,
+    paintColor: document.querySelector("#paint-color").value,
     annualMiles: Number(document.querySelector("#annual-miles").value),
     creditTier: document.querySelector("#credit-tier").value,
     safetyPriority: document.querySelector("#safety-priority").value,
@@ -296,6 +304,20 @@ function readNeedsForm() {
     drivingStyle: document.querySelector("#driving-style").value,
     fuelInterest: document.querySelector("#fuel-interest").value,
     preferredPlan,
+    currentVehicle: {
+      status: document.querySelector("#current-vehicle-status").value,
+      tradeIntent: document.querySelector("#trade-intent").value,
+      monthlyPayment: Number(document.querySelector("#current-loan-payment").value || 0),
+      payoffBalance: Number(document.querySelector("#current-loan-balance").value || 0),
+      estimatedValue: Number(document.querySelector("#current-vehicle-value").value || 0),
+      apr: Number(document.querySelector("#current-loan-apr").value || 0),
+      monthsRemaining: Number(document.querySelector("#current-loan-term").value || 0),
+      leasePayment: Number(document.querySelector("#current-lease-payment").value || 0),
+      maturityDate: document.querySelector("#lease-maturity").value,
+      currentMileage: Number(document.querySelector("#lease-current-mileage").value || 0),
+      allowedMileage: Number(document.querySelector("#lease-allowed-mileage").value || 0),
+      residualValue: Number(document.querySelector("#lease-residual").value || 0),
+    },
   };
   state.compare = [];
   cars.forEach((c) => { c.awdAdded = !!(state.profile.awd && c.awd && !c.awdStd); c.price = c.basePrice + (c.awdAdded ? AWD_PREMIUM : 0); });
@@ -334,6 +356,7 @@ function readNeedsForm() {
     `Here are the Toyotas that fit your price and payment guardrails${name}. Demo prices and payments are estimates; check Toyota for current trims, features, and pricing.`;
   document.querySelector("#auth-shell").classList.add("hidden");
   document.querySelector("#needs-shell").classList.add("hidden");
+  document.querySelectorAll(".needs-shell input[type=number]").forEach(input => { input.required = false; });
   document.querySelector(".intro").classList.remove("hidden");
   document.querySelector("#edit-preferences").classList.remove("hidden");
   document.querySelector(".game-shell").classList.remove("hidden");
@@ -341,6 +364,7 @@ function readNeedsForm() {
     ? `${state.matches.length === state.allMatches.length ? state.matches.length : `Top ${state.matches.length} of ${state.allMatches.length}`} possible ${state.allMatches.length === 1 ? "match" : "matches"} · based on your answers`
     : "No exact matches · adjust your budget or payment limit";
   syncShowAll();
+  navigateToPage("customization");
   if (state.matches.length) renderSetup();
   else document.querySelector("#deal-insights").innerHTML = '<p class="insight-empty">Adjust your filters to find a vehicle before calculating a Deal Benefit Score.</p>';
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1007,6 +1031,9 @@ function showNeeds() {
   document.querySelector(".game-shell").classList.add("hidden");
   document.querySelector("#drive-shell").classList.add("hidden");
   document.querySelector("#ending-shell").classList.add("hidden");
+  document.querySelectorAll(".needs-shell input[type=number]").forEach(input => { input.required = false; });
+  ToyotaWizard?.restart();
+  navigateToPage("customization");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1045,6 +1072,7 @@ function resetGame() {
   resetDealScenario();
   document.querySelector("#auth-form").reset();
   document.querySelector("#needs-form").reset();
+  ToyotaWizard?.reset();
   setAuthMode("signup");
   document.querySelector("#auth-shell").classList.remove("hidden");
   document.querySelector("#needs-shell").classList.add("hidden");
