@@ -113,13 +113,29 @@ function monthlyPayment(car, plan) {
   return principal * rate / (1 - Math.pow(1 + rate, -plan.months));
 }
 
-function planIsAffordable(car, plan) {
+function planAffordabilityIssues(car, plan) {
   const p = state.profile;
   const skipped = p.skippedQuestions || [];
-  const leaseMileageFits = plan.id !== "lease" || skipped.includes("mileage") || p.annualMiles <= 10000;
-  return leaseMileageFits && (skipped.includes("max-price") || car.price <= p.maxPrice) &&
-    (skipped.includes("monthly-cap") || monthlyPayment(car, plan) <= p.monthlyCap) &&
-    (skipped.includes("total-funds") || upfrontCost(car, plan) + monthlyPayment(car, plan) + ROAD_RESERVE <= p.totalFunds);
+  const issues = [];
+  if (plan.id === "lease" && !skipped.includes("mileage") && p.annualMiles > 10000) {
+    issues.push(`This example lease allows 10,000 miles/year; your answer is ${p.annualMiles.toLocaleString("en-US")} miles/year. A higher-mileage lease would need a different quote.`);
+  }
+  if (!skipped.includes("max-price") && car.price > p.maxPrice) {
+    issues.push(`The ${dollars(car.price)} starting price exceeds your ${dollars(p.maxPrice)} maximum.`);
+  }
+  const monthly = monthlyPayment(car, plan);
+  if (!skipped.includes("monthly-cap") && monthly > p.monthlyCap) {
+    issues.push(`The estimated ${dollars(monthly)}/month payment exceeds your ${dollars(p.monthlyCap)}/month limit.`);
+  }
+  const needed = upfrontCost(car, plan) + monthly + ROAD_RESERVE;
+  if (!skipped.includes("total-funds") && needed > p.totalFunds) {
+    issues.push(`This plan needs ${dollars(needed)} for the upfront cost, first payment and ${dollars(ROAD_RESERVE)} road reserve; your available savings are ${dollars(p.totalFunds)}.`);
+  }
+  return issues;
+}
+
+function planIsAffordable(car, plan) {
+  return planAffordabilityIssues(car, plan).length === 0;
 }
 
 function meetsNeeds(car) {
@@ -249,6 +265,7 @@ function renderCars() {
   grid.querySelectorAll("[data-car]").forEach((button) => {
     button.addEventListener("click", () => {
       state.car = state.matches.find((car) => car.id === button.dataset.car);
+      if (!planIsAffordable(state.car, state.plan)) state.plan = bestPlan(state.car);
       renderSetup();
       window.ToyotaInsurance?.prompt(state.car);
     });
@@ -264,8 +281,8 @@ function renderPlans() {
   grid.innerHTML = plans.map((plan) => {
     const affordable = planIsAffordable(state.car, plan);
     const upfront = upfrontCost(state.car, plan);
-    return `<button class="plan-card ${state.plan.id === plan.id ? "selected" : ""}" type="button" data-plan="${plan.id}" aria-pressed="${state.plan.id === plan.id}" ${!affordable ? "disabled" : ""}>
-      <span class="plan-title-row"><strong>${plan.name}</strong><span>${affordable ? plan.badge : "OUTSIDE YOUR LIMITS"}</span></span>
+    return `<button class="plan-card ${state.plan.id === plan.id ? "selected" : ""} ${affordable ? "" : "plan-outside"}" type="button" data-plan="${plan.id}" aria-pressed="${state.plan.id === plan.id}">
+      <span class="plan-title-row"><strong>${plan.name}</strong><span>${affordable ? plan.badge : "PREVIEW · OUTSIDE LIMITS"}</span></span>
       <p>${plan.description}</p>
       <p class="plan-cost">Due at start: ${dollars(upfront)} · ${plan.id === "cash" ? "No payment" : `${dollars(monthlyPayment(state.car, plan))}/mo`}</p>
     </button>`;
@@ -276,13 +293,46 @@ function renderPlans() {
       renderSetup();
     });
   });
+  let notice = document.querySelector("#plan-limit-notice");
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "plan-limit-notice";
+    notice.setAttribute("role", "status");
+    grid.after(notice);
+  }
+  const issues = planAffordabilityIssues(state.car, state.plan);
+  notice.classList.toggle("hidden", issues.length === 0);
+  notice.replaceChildren();
+  document.querySelector("#start-drive").disabled = issues.length > 0;
+  if (issues.length) {
+    const heading = document.createElement("strong");
+    heading.textContent = `${state.plan.name} · preview only`;
+    const copy = document.createElement("p");
+    copy.textContent = "You can compare this option, but it does not fit your current answers. Your filters have not been changed.";
+    const list = document.createElement("ul");
+    issues.forEach(message => {
+      const item = document.createElement("li");
+      item.textContent = message;
+      list.append(item);
+    });
+    const adjust = document.createElement("button");
+    adjust.type = "button";
+    adjust.className = "skip-button";
+    adjust.textContent = "Review budget and mileage filters";
+    adjust.addEventListener("click", () => {
+      window.ResultsFilters?.render();
+      const panel = document.querySelector("#results-filters");
+      if (!panel) return;
+      panel.open = true;
+      panel.scrollIntoView({block:"start", behavior:"smooth"});
+      panel.querySelector("summary").focus();
+    });
+    notice.append(heading, copy, list, adjust);
+  }
 }
 
 function renderSetup() {
   if (!state.profile) return;
-  if (!planIsAffordable(state.car, state.plan)) {
-    state.plan = plans.find((plan) => planIsAffordable(state.car, plan)) || plans[0];
-  }
   renderCars();
   renderPlans();
   document.querySelector("#budget-amount").textContent = state.profile.skippedQuestions?.includes("total-funds") ? "Not specified" : dollars(state.profile.totalFunds);
@@ -472,6 +522,11 @@ function returnToMatches() {
 
 function startDrive() {
   if (!state.matches.length || !state.profile) return;
+  if (!planIsAffordable(state.car, state.plan)) {
+    renderSetup();
+    document.querySelector("#plan-limit-notice").scrollIntoView({block:"center"});
+    return;
+  }
   const firstPayment = monthlyPayment(state.car, state.plan);
   state.remaining = state.profile.totalFunds - upfrontCost(state.car, state.plan) - firstPayment;
   state.tripCosts = 0;

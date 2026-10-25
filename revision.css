@@ -369,3 +369,8 @@
 #quiz-match-warning p { margin: 0 0 12px; }
 #back-to-matches { min-height: 44px; margin: 0 0 20px; padding: 10px 18px; }
 #results-filters option:disabled { color: #777; }
+.plan-card.plan-outside { border-style: dashed; }
+#plan-limit-notice { margin: 16px 0; padding: 18px; border: 1px solid #d9cbb6; border-radius: 8px; background: #faf6ed; font-size: 14px; line-height: 1.5; }
+#plan-limit-notice p { margin: 8px 0; }
+#plan-limit-notice ul { margin: 8px 0 14px; padding-left: 20px; }
+#plan-limit-notice button { min-height: 44px; padding: 10px 14px; }

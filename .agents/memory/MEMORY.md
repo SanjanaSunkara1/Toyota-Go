@@ -1,3 +1,5 @@
 - [Toyota Go scope](toyota-go-scope.md) — user branding requirements and permission for explicitly illustrative comparison metrics.
 - [Browser verification](browser-verification.md) — check native option.disabled directly when testing unavailable dropdown choices.
 - [Nessie sandbox boundaries](nessie-sandbox.md) — iframe-safe session handling and uncertain transfer outcomes.
+- [Payment-plan previews](payment-plan-previews.md) — keep plan cards selectable; distinguish comparison previews from affordable driving scenarios.
+- [Presentation deliverables](presentation-deliverables.md) — project slides must be standalone files, not additions or a migration of the website.
