@@ -3,6 +3,9 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit, parse_qs
 from http.cookies import SimpleCookie
+from contextlib import ExitStack
+from threading import Thread
+import argparse
 import json
 import os
 import secrets
@@ -106,4 +109,26 @@ class PublicHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    ThreadingHTTPServer(("0.0.0.0", 5000), PublicHandler).serve_forever()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preview-alias-port", type=int,
+                        help="Optional development listener for an additional Preview URL.")
+    args = parser.parse_args()
+    if args.preview_alias_port is not None and (
+            not 1024 <= args.preview_alias_port <= 65535 or args.preview_alias_port == 5000):
+        parser.error("The preview alias must be a distinct port between 1024 and 65535.")
+    # Both development URLs use the same handler and in-memory banking service.
+    # Production still starts only the primary listener with `python3 server.py`.
+    with ExitStack() as stack:
+        primary = stack.enter_context(ThreadingHTTPServer(("0.0.0.0", 5000), PublicHandler))
+        alias = None
+        if args.preview_alias_port is not None:
+            alias = stack.enter_context(
+                ThreadingHTTPServer(("0.0.0.0", args.preview_alias_port), PublicHandler))
+            Thread(target=alias.serve_forever, daemon=True).start()
+        print(f"Toyota Go listening on 0.0.0.0:5000"
+              + (f" and preview alias :{args.preview_alias_port}" if alias else ""), flush=True)
+        try:
+            primary.serve_forever()
+        finally:
+            if alias:
+                alias.shutdown()

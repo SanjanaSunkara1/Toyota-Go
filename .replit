@@ -21,7 +21,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 server.py"
+args = "python3 server.py --preview-alias-port 5001"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -30,6 +30,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 5000
 
 [deployment]
 deploymentTarget = "vm"
