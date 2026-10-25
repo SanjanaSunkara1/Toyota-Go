@@ -3,6 +3,12 @@
   const menu = document.querySelector("#site-menu");
   if (!toggle || !menu) return;
   window.navigateToPage = function navigateToPage(name) {
+    if (state.profile && (name === "home" || (name === "customization" &&
+        (!document.querySelector("#drive-shell").classList.contains("hidden") ||
+         !document.querySelector("#ending-shell").classList.contains("hidden"))))) {
+      returnToMatches();
+      return;
+    }
     const valid = ["home", "customization", "safety"];
     const page = valid.includes(name) ? name : "home";
     if (state.drive && !state.drive.finished) {
@@ -30,7 +36,7 @@
     toggle.setAttribute("aria-label", "Open navigation");
     document.title = page === "safety"
       ? "Toyota Go — Vehicle Safety & Sustainability"
-      : page === "customization" ? "Toyota Go — Find Your Toyota" : "Toyota Go — To You Total Assistance";
+      : page === "customization" ? "Toyota Go — Find Your Toyota" : "Toyota Go — Move Freely. Live Fully";
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   toggle.addEventListener("click", () => {
@@ -45,7 +51,7 @@
       else navigateToPage(button.dataset.page);
     }));
   document.querySelector("#home-resume")?.addEventListener("click", () => {
-    if (state.profile) navigateToPage("customization");
+    if (state.profile) returnToMatches();
     else showNeeds();
   });
   document.querySelector("#home-safety")?.addEventListener("click", () => navigateToPage("safety"));

@@ -12,7 +12,7 @@ use external Google/Toyota hosts; the branding image and logo are local.
 
 ## Features and data
 
-- Toyota Go branding and tagline: **To You Total Assistance**.
+- Toyota Go branding and tagline: **Move Freely. Live Fully**.
 - Demo signup/login only. Passwords are not saved or sent.
 - Budget/needs filters, Toyota shortlist, up to three-car comparison, payment plans and driving games.
 - Skippable grouped preferences (up to three questions per card), with body style,

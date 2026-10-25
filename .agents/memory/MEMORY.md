@@ -1,1 +1,2 @@
 - [Toyota Go scope](toyota-go-scope.md) — user branding requirements and permission for explicitly illustrative comparison metrics.
+- [Browser verification](browser-verification.md) — check native option.disabled directly when testing unavailable dropdown choices.

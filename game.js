@@ -136,6 +136,22 @@ function meetsNeeds(car) {
   return true;
 }
 
+// Evaluate drafts without changing the selected profile or catalog prices.
+function matchingVehicles(profile) {
+  const previous = state.profile;
+  state.profile = profile;
+  try {
+    return cars.map(car => ({
+      ...car,
+      price: car.basePrice + (profile.awd && car.awd && !car.awdStd ? AWD_PREMIUM : 0),
+    })).filter(car => meetsNeeds(car) && (profile.preferredPlan === "any"
+      ? plans.some(plan => planIsAffordable(car, plan))
+      : planIsAffordable(car, getPlan(profile.preferredPlan))));
+  } finally {
+    state.profile = previous;
+  }
+}
+
 function requirementChips(car, plan) {
   const p = state.profile, need = Math.max(p.childSeats ? 5 : 1, p.passengers);
   const pay = monthlyPayment(car, plan);
@@ -298,7 +314,7 @@ function readNeedsForm() {
   if (!form.reportValidity()) return;
   const preferredPlan = document.querySelector("#payment-preference").value;
   const optionalNumber = id => document.querySelector(`#${id}`).value === "" ? null : Number(document.querySelector(`#${id}`).value);
-  state.profile = {
+  const profile = {
     maxPrice,
     monthlyCap,
     totalFunds,
@@ -335,15 +351,20 @@ function readNeedsForm() {
       overageRate: optionalNumber("lease-overage-rate"),
     },
   };
+  const matchingIds = new Set(matchingVehicles(profile).map(car => car.id));
+  if (matchingIds.size < 2) {
+    window.ResultsFilters?.reject(profile);
+    return false;
+  }
+  state.profile = profile;
+  document.querySelector("#quiz-match-warning")?.classList.add("hidden");
   state.compare = [];
   if (state.profile.currentVehicle.status === "loan" && state.profile.currentVehicle.estimatedValue !== null) {
     activeDealScenario.currentValue = state.profile.currentVehicle.estimatedValue;
   }
   cars.forEach((c) => { c.awdAdded = !!(state.profile.awd && c.awd && !c.awdStd); c.price = c.basePrice + (c.awdAdded ? AWD_PREMIUM : 0); });
   plans[0].description = `Estimated payment · ${(illustrativeApr() * 100).toFixed(1)}% example APR · 60 months`;
-  state.allMatches = cars.filter((car) => meetsNeeds(car) && car.price <= maxPrice && (preferredPlan === "any"
-    ? plans.some((plan) => planIsAffordable(car, plan))
-    : planIsAffordable(car, getPlan(preferredPlan))));
+  state.allMatches = cars.filter(car => matchingIds.has(car.id));
   state.allMatches.sort((a, b) => matchScore(b) - matchScore(a));
   state.matches = [...state.allMatches];
   document.querySelector(".money-panel").classList.toggle("hidden", state.matches.length === 0);
@@ -387,7 +408,22 @@ function readNeedsForm() {
   if (state.matches.length) renderSetup();
   else document.querySelector("#deal-insights").innerHTML = '<p class="insight-empty">Adjust your filters to find a vehicle before calculating a Deal Benefit Score.</p>';
   document.dispatchEvent(new Event("toyota:matches"));
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.ResultsFilters?.finish();
+  return true;
+}
+
+function returnToMatches() {
+  if (!state.profile) { showNeeds(); return; }
+  cancelAnimationFrame(state.animationFrame);
+  state.drive = null;
+  Object.keys(state.keys).forEach(key => { state.keys[key] = false; });
+  document.querySelectorAll(".pressed").forEach(button => button.classList.remove("pressed"));
+  ["#auth-shell", "#needs-shell", "#drive-shell", "#ending-shell"].forEach(id => document.querySelector(id).classList.add("hidden"));
+  [".intro", ".game-shell", "#edit-preferences", "#deal-insights"].forEach(id => document.querySelector(id).classList.remove("hidden"));
+  navigateToPage("customization");
+  renderSetup();
+  window.ResultsFilters?.render();
+  window.ResultsFilters?.finish();
 }
 
 function startDrive() {
@@ -401,6 +437,8 @@ function startDrive() {
   document.querySelector(".game-shell").classList.add("hidden");
   document.querySelector(".intro").classList.add("hidden");
   document.querySelector("#edit-preferences").classList.add("hidden");
+  window.ResultsFilters?.hide();
+  ["#deal-insights", "#insurance-panel", "#compare-tray"].forEach(id => document.querySelector(id)?.classList.add("hidden"));
   document.querySelector("#drive-shell").classList.remove("hidden");
   document.querySelector('[data-step="1"]').classList.remove("active");
   document.querySelector('[data-step="1"]').classList.add("done");
@@ -408,7 +446,7 @@ function startDrive() {
   document.querySelector('[data-step="3"]').classList.add("active");
   document.querySelector("#road-trip-car").textContent = `TOYOTA ${state.car.name.toUpperCase()}`;
   renderDrive();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function renderDrive() {
@@ -1140,7 +1178,8 @@ document.querySelector("#copy-compare").addEventListener("click", async () => {
 document.querySelector("#copy-results").addEventListener("click", copyResults);
 document.querySelector("#save-results").addEventListener("click", saveResults);
 document.querySelector("#print-results").addEventListener("click", () => window.print());
-document.querySelector("#replay-button").addEventListener("click", showNeeds);
+document.querySelector("#replay-button").addEventListener("click", returnToMatches);
+document.querySelector("#back-to-matches").addEventListener("click", returnToMatches);
 document.querySelector("#edit-preferences").addEventListener("click", () => window.ResultsFilters?.open());
 window.addEventListener("keydown", (event) => {
   if (!state.drive || state.drive.finished || state.drive.paused) return;

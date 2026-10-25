@@ -50,9 +50,14 @@ def clear_filters(page):
 
 
 def filter_results(page, values):
+    if page.locator("#results-filters").get_attribute("open") is None:
+        page.locator("#edit-preferences").click()
     for field, value in values.items():
         page.locator(f"#filter-{field}").select_option(value)
     page.locator("#apply-results-filters").click()
+    assert page.locator("#results-filters").get_attribute("open") is None
+    page.wait_for_function("Math.abs(document.querySelector('.selection-panel .section-heading').getBoundingClientRect().top-90)<3")
+    assert page.evaluate("state.matches.length>=2")
 
 
 def run():
@@ -65,6 +70,10 @@ def run():
         errors = []
         page.on("pageerror",lambda error: errors.append(str(error)))
         page.goto(BASE, wait_until="domcontentloaded")
+        assert "Move Freely. Live Fully" in page.title()
+        assert "To You Total Assistance" not in page.content()
+        assert page.locator(".top-note").text_content() == "Move Freely. Live Fully"
+        assert "Move Freely. Live Fully" in page.locator("footer").inner_text()
         page.wait_for_function("typeof ToyotaInsurance !== 'undefined' && typeof ResultsFilters !== 'undefined'")
         page.wait_for_function("document.querySelector('.home-dealership-hero img').naturalWidth > 0")
         assert page.locator("#home-overview").is_visible()
@@ -104,23 +113,22 @@ def run():
         assert page.evaluate("state.matches.length") == 43
         assert page.locator("#show-all").is_hidden()
         # Different real dropdown combinations must not return the same six cars.
-        filter_results(page,{"car-type-filter":"truck","fuel-interest":"hybrid","year-filter":"2026","max-price":"50000"})
-        assert page.evaluate("state.matches.map(car=>car.id)") == ["tacomahybrid"]
+        filter_results(page,{"car-type-filter":"truck","fuel-interest":"hybrid","year-filter":"2026","max-price":"70000"})
+        assert set(page.evaluate("state.matches.map(car=>car.id)")) == {"tacomahybrid","tundrahybrid"}
         clear_filters(page)
-        filter_results(page,{"model-filter":"priusphev","year-filter":"2027"})
-        assert page.evaluate("state.matches.map(car=>car.id)") == ["priusphev"]
-        assert page.locator("#car-grid .car-card").count() == 1
+        filter_results(page,{"model-filter":"priusphev"})
+        assert set(page.evaluate("state.matches.map(car=>car.id)")) == {"priusphev","priusphev-2026"}
+        page.locator("#edit-preferences").click()
+        assert page.locator('#filter-year-filter option[value="2027"]').evaluate("(o)=>o.disabled")
+        assert page.locator('#filter-car-type-filter option[value="truck"]').evaluate("(o)=>o.disabled")
+        assert page.locator('#filter-model-filter option[value="mirai"]').evaluate("(o)=>o.disabled")
         clear_filters(page)
         filter_results(page,{"passengers":"7"})
         assert page.evaluate("state.matches.length > 0 && state.matches.every(car=>car.seats>=7)")
         clear_filters(page)
-        filter_results(page,{"model-filter":"chr","car-type-filter":"truck"})
-        assert page.locator("#no-matches").is_visible()
-        assert page.locator(".car-card").count() == 0
-        page.locator("#edit-needs").click()
-        assert page.locator("#results-filters").get_attribute("open") is not None
-        page.locator("#clear-results-filters").click()
-        assert page.locator(".car-card").count() == 43
+        page.locator("#edit-preferences").click()
+        assert page.locator('#filter-fuel-interest option[value="fcev"]').evaluate("(o)=>o.disabled")
+        assert not page.locator("#no-matches").is_visible()
         filter_results(page,{"max-price":"25000"})
         assert page.evaluate("state.matches.length>0 && state.matches.every(car=>car.price<=25000)")
         clear_filters(page)
@@ -164,6 +172,30 @@ def run():
         assert "Vehicle payment + selected insurance" in comparison
         assert "three-year ownership cost + insurance" in comparison
         page.locator("#close-compare").click()
+        # Both the visible Back button and Home preserve the filtered shortlist and selected car/plan.
+        filter_results(page,{"car-type-filter":"truck","fuel-interest":"hybrid","year-filter":"2026","max-price":"70000"})
+        page.screenshot(path=str(OUTPUT / "filter-results-minimum-two.png"))
+        saved = page.evaluate("({ids:state.matches.map(c=>c.id),car:state.car.id,plan:state.plan.id,profile:JSON.stringify(state.profile)})")
+        for exit_mode in ["back","home"]:
+            page.locator("#start-drive").click()
+            if page.locator("#insurance-dialog").is_visible():
+                page.locator("#insurance-no").click()
+            assert page.locator("#back-to-matches").is_visible()
+            page.wait_for_function("document.querySelector('#back-to-matches').getBoundingClientRect().top>=document.querySelector('.topbar').getBoundingClientRect().bottom")
+            page.screenshot(path=str(OUTPUT / "simulation-back-navigation.png"))
+            page.locator("#choice-list button").first.click()
+            assert page.evaluate("state.drive!==null")
+            if exit_mode == "back":
+                page.locator("#back-to-matches").click()
+            else:
+                menu(page,"home")
+            assert page.locator("#drive-shell").is_hidden()
+            assert page.locator("#needs-shell").is_hidden()
+            assert page.locator(".game-shell").is_visible()
+            assert page.evaluate("state.drive===null && !Object.values(state.keys).some(Boolean)")
+            assert page.evaluate("({ids:state.matches.map(c=>c.id),car:state.car.id,plan:state.plan.id,profile:JSON.stringify(state.profile)})") == saved
+            assert page.locator("#results-filters").get_attribute("open") is None
+        clear_filters(page)
         # Lease details still work in grouped cards and known overage uses the entered contract rate.
         page.locator("#edit-preferences").click()
         page.locator("#edit-contract").click()
@@ -211,7 +243,8 @@ def run():
             page.set_viewport_size({"width":width,"height":844})
             assert page.evaluate("document.documentElement.scrollWidth<=innerWidth+1")
             menu(page,"home")
-            assert page.locator(".home-dealership-hero img").is_visible()
+            assert page.locator(".game-shell").is_visible()
+            assert page.locator("#needs-shell").is_hidden()
             assert page.evaluate("document.documentElement.scrollWidth<=innerWidth+1")
             page.screenshot(path=str(OUTPUT / f"home-updated-{width}.png"))
             menu(page,"customization")
@@ -225,8 +258,19 @@ def run():
         assert not errors, errors
         assert page.request.get(BASE+"/.replit").status == 404
         assert page.request.get(BASE+"/zipFile.zip").status == 404
+        # An impossible quiz never publishes a zero- or one-car shortlist.
+        page.locator("#edit-preferences").click()
+        page.locator("#edit-contract").click()
+        page.locator("#car-type-filter").evaluate("(node)=>node.value='coupe'")
+        page.locator("#fuel-interest").evaluate("(node)=>node.value='ev'")
+        page.evaluate("ToyotaWizard.setSkipped([]); readNeedsForm()")
+        assert page.locator("#quiz-match-warning").is_visible()
+        assert page.evaluate("state.matches.length>=2")
+        page.locator("#quiz-match-warning button").click()
+        assert page.locator(".car-card").count() == 43
+        assert not errors, errors
         browser.close()
-        print("PASS: grouped skippable quiz, conditional contracts, all 43 catalog results, distinct dropdown filters including 7 seats and no matches, red accents, Home image, insurance prompt/quote math/select/delete/car comparisons, every TSS feature, actual Prius PHEV image, EV filters and responsive layouts; no browser errors.")
+        print("PASS: tagline, minimum-two dependent filters, quiz guard, collapsed filters and car scroll position, drive Back/Home preserving results, grouped quiz/contracts, insurance, all TSS demos, catalog and responsive layouts; no browser errors.")
 
 
 if __name__ == "__main__":

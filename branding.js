@@ -1,13 +1,13 @@
 (() => {
-  const tagline = "To You Total Assistance";
+  const tagline = "Move Freely. Live Fully";
   const logoPath = "assets/toyota-logo.svg";
   const photoPath = "attached_assets/0_Screen_Shot_2026-10-25_at_12.55.02_AM_1792907721806.png";
 
-  document.title = "Toyota Go — To You Total Assistance";
+  document.title = "Toyota Go — Move Freely. Live Fully";
   const description = "Explore affordable, safe and sustainable Toyota choices with friendly guidance and a hands-on driving experience.";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#c9141d");
   document.querySelector('meta[name="description"]')?.setAttribute("content", description);
-  document.querySelector('meta[property="og:title"]')?.setAttribute("content", "Toyota Go — To You Total Assistance");
+  document.querySelector('meta[property="og:title"]')?.setAttribute("content", "Toyota Go — Move Freely. Live Fully");
   document.querySelector('meta[property="og:description"]')?.setAttribute("content", description);
 
   document.querySelectorAll(".brand").forEach((brand) => {
@@ -22,7 +22,7 @@
   if (footerBrand) footerBrand.textContent = "Toyota Go";
   const footerCopy = document.querySelector("footer span:last-child");
   if (footerCopy) {
-    footerCopy.textContent = "To You Total Assistance · Explore affordable, safe and sustainable choices. Independent educational demo; not affiliated with Toyota Motor Corporation.";
+    footerCopy.textContent = "Move Freely. Live Fully · Explore affordable, safe and sustainable choices. Independent educational demo; not affiliated with Toyota Motor Corporation.";
   }
 
   const authCopy = document.querySelector(".auth-copy");

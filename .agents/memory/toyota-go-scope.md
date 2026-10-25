@@ -3,7 +3,7 @@ name: Toyota Go product scope
 description: User-defined branding, layout preservation and illustrative comparison constraints.
 ---
 
-The user requested the name **Toyota Go**, exact tagline **To You Total Assistance**, actual Toyota logo, and a red header with white text inspired by the supplied SeedBank reference. Keep the supplied Toyota building photo on the Home account panel and use their supplied SUV trail photo in place of the illustration on the post-quiz results page.
+The user requested the name **Toyota Go**, exact tagline **Move Freely. Live Fully**, actual Toyota logo, and a red header with white text inspired by the supplied SeedBank reference. Keep the supplied Toyota building photo on the Home account panel and use their supplied SUV trail photo in place of the illustration on the post-quiz results page.
 
 **Why:** The user explicitly requested these branding and scope constraints.
 
@@ -14,6 +14,12 @@ The user wants up to three questions in each quiz card before Next, a Skip optio
 **Why:** The user explicitly revised the one-at-a-time flow to three-question cards, asked for easier results filtering, and objected to repeatedly seeing the same six cars.
 
 **How to apply:** Preserve progressive, skippable questioning. Missing contract data must remain unknown, never be replaced with sample amounts presented as a customer's actual details.
+
+The user requires at least two matching cars: unavailable combinations must not publish empty or one-car results. Applying filters must collapse the controls and start the view at the cars. Back from a test drive and Home after filtering must return to the existing filtered results, not the quiz.
+
+**Why:** The user objected to empty results, having to scroll past filters after applying them, and losing their place when leaving the simulation.
+
+**How to apply:** Keep the customer's selected car and payment plan when returning. Do not silently ignore a financial limit to reach the minimum; disable incompatible dropdown choices or ask customers to broaden quiz answers explicitly.
 
 The user chose **clearly labeled illustrative estimates** for deal, resale, safety, ecological and reliability comparisons.
 
