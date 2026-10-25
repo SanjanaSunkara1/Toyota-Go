@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10281f">
+    <meta name="description" content="Pick a Toyota, make a money plan, and take it on three test-drive adventures.">
+    <meta property="og:title" content="Toyota Match — Find the Toyota that fits">
+    <meta property="og:description" content="Pick a Toyota, make a money plan, and take it on three test-drive adventures.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2716%27 fill=%27%23244d38%27/%3E%3Cpath d=%27M10 22 22 10M13 10h9v9%27 stroke=%27%23d9ef90%27 stroke-width=%273%27 fill=%27none%27/%3E%3C/svg%3E">
+    <title>Toyota Match — Find the Toyota that fits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="cars.js" defer></script>
+    <script src="game.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Toyota Match home"><span class="brand-mark">↗</span> toyota match</a>
+      <div class="top-note"><span class="live-dot"></span> FIND YOUR NEXT TOYOTA</div>
+      <button class="reset-button" id="reset-button" type="button">Start over</button>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section class="auth-shell" id="auth-shell" aria-labelledby="auth-title">
+        <div class="auth-art">
+          <div class="auth-sun"></div><div class="auth-hills"></div>
+          <div class="auth-car" aria-hidden="true"><span></span><i></i><i></i></div>
+          <div class="auth-art-copy"><span>YOUR NEXT TOYOTA</span><strong>Starts with<br>what matters to you.</strong></div>
+        </div>
+        <form class="auth-form" id="auth-form">
+          <a class="brand auth-brand" href="#"><span class="brand-mark">↗</span> toyota match</a>
+          <p class="eyebrow">YOUR TOYOTA, YOUR WAY</p>
+          <h1 id="auth-title">Let's find a Toyota<br>that <em>fits.</em></h1>
+          <p class="auth-copy">Sign in or create a Toyota Match account to start with your budget, priorities, and the way you drive.</p>
+          <div class="auth-tabs" role="tablist" aria-label="Account access">
+            <button class="auth-tab active" id="signup-tab" type="button" role="tab" aria-selected="true">Create account</button>
+            <button class="auth-tab" id="login-tab" type="button" role="tab" aria-selected="false">Sign in</button>
+          </div>
+          <label class="form-field" id="name-field">Your name<input id="account-name" name="name" autocomplete="name" placeholder="e.g. Jordan Lee" required></label>
+          <label class="form-field">Email address<input id="account-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+          <label class="form-field">Password<input id="account-password" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters" required></label>
+          <button class="primary-button auth-submit" type="submit"><span id="auth-submit-label">Create my account</span><span>→</span></button>
+          <p class="prototype-note"><span>ⓘ</span> Demo account flow only. No password is saved or sent anywhere.</p>
+        </form>
+      </section>
+
+      <section class="needs-shell hidden" id="needs-shell" aria-labelledby="needs-title">
+        <div class="needs-intro"><p class="eyebrow">STEP 1 · YOUR NEEDS</p><h1 id="needs-title">What does your<br>perfect Toyota <em>look like?</em></h1><p>Just the basics. Use rough estimates—this is a learning demo, not a credit application.</p></div>
+        <form id="needs-form">
+          <div class="needs-grid">
+            <fieldset class="needs-card finance-card"><legend><span>01</span> Your budget</legend>
+              <label class="form-field">Maximum vehicle price <span class="input-suffix"><span>$</span><input id="max-price" type="number" min="10000" max="100000" step="1000" value="38000" required></span></label>
+              <label class="form-field">Comfortable monthly payment <span class="input-suffix"><span>$</span><input id="monthly-cap" type="number" min="0" max="2000" step="25" value="550" required></span></label>
+              <label class="form-field">Savings available for upfront + road <span class="input-suffix"><span>$</span><input id="total-funds" type="number" min="0" max="100000" step="500" value="12000" required></span></label>
+              <label class="form-field">Planned down payment <span class="input-suffix"><span>$</span><input id="down-payment" type="number" min="0" max="50000" step="500" value="4000" required></span></label>
+              <label class="form-field">Credit score range <span class="optional-label">OPTIONAL</span>
+                <select id="credit-tier"><option value="unknown">Prefer not to say</option><option value="under580">Below 580</option><option value="580-669">580–669</option><option value="670-739" selected>670–739</option><option value="740plus">740 or higher</option></select>
+              </label>
+              <p class="field-caption credit-note">Used only to show a rough example loan rate in this demo. No credit check; your selection isn't saved or sent.</p>
+              <label class="form-field">How would you prefer to pay?
+                <select id="payment-preference"><option value="any">Show me all options</option><option value="loan">Buy with a loan</option><option value="lease">Lease</option><option value="cash">Pay cash</option></select>
+              </label>
+              <label class="form-field">Approximate annual driving
+                <select id="annual-miles"><option value="7500">Under 10,000 miles</option><option value="12000" selected>About 10,000–15,000 miles</option><option value="18000">More than 15,000 miles</option></select>
+              </label>
+            </fieldset>
+            <fieldset class="needs-card"><legend><span>02</span> Safety &amp; confidence</legend>
+              <label class="form-field">What matters most?
+                <select id="safety-priority"><option value="all">Strong safety features</option><option value="assist">Driver-assistance technology</option><option value="visibility">Visibility &amp; easy maneuvering</option><option value="space">Room for passengers and car seats</option></select>
+              </label>
+              <p class="field-caption">Safety equipment varies by model year and trim. Use Toyota's official model pages to compare exact equipment.</p>
+              <div class="check-row"><input id="safety-assist" type="checkbox" checked><label for="safety-assist">Prioritize driver-assistance features</label></div>
+              <div class="check-row"><input id="safety-space" type="checkbox"><label for="safety-space">Need room for child seats</label></div>
+              <div class="check-row"><input id="safety-awd" type="checkbox"><label for="safety-awd">Interested in available all-wheel drive</label></div>
+            </fieldset>
+            <fieldset class="needs-card"><legend><span>03</span> Your everyday</legend>
+              <label class="form-field">How many people ride with you?
+                <select id="passengers"><option value="1">Mostly just me</option><option value="2" selected>Usually 2 people</option><option value="4">3–4 people</option><option value="5">5 or more people</option></select>
+              </label>
+              <label class="form-field">What kind of driving?
+                <select id="driving-style"><option value="mixed">A mix of city and highway</option><option value="city">Mostly city / commuting</option><option value="highway">Mostly highway / long trips</option><option value="adventure">Weekend adventures and gear</option></select>
+              </label>
+              <label class="form-field">What would you like to explore?
+                <select id="fuel-interest"><option value="any">I'm open to options</option><option value="hybrid">Hybrid efficiency</option><option value="gas">Gas-powered simplicity</option></select>
+              </label>
+            </fieldset>
+          </div>
+          <div class="needs-footer"><p class="prototype-note"><span>ⓘ</span> No Social Security number, bank details, or credit check. Your answers stay in this demo session.</p><button class="primary-button" type="submit">Find my Toyota matches <span>→</span></button></div>
+        </form>
+      </section>
+
+      <section class="intro hidden" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow" id="recommendation-eyebrow">YOUR PERSONALIZED TOYOTA SHORTLIST</p>
+          <h1 id="page-title">Your Toyota<br><em>matches.</em></h1>
+          <p class="intro-text" id="recommendation-intro">Based on your budget and priorities, here are a few Toyotas to explore. Open Toyota's official model page for current trims, features, and pricing.</p>
+          <div class="trip-meta">
+            <span><span class="meta-icon">⌁</span> 3 test-drive adventures</span>
+            <span><span class="meta-icon">◷</span> About 5 minutes</span>
+            <button class="intro-edit-button hidden" id="edit-preferences" type="button">Adjust my answers</button>
+          </div>
+        </div>
+        <div class="hero-art" aria-label="Illustration of a car driving through a mountain landscape">
+          <div class="sun"></div>
+          <div class="hero-label"><span>YOUR TOYOTA ROUTE</span><strong>Somewhere new</strong></div>
+          <svg class="hero-landscape" viewBox="0 0 760 330" role="img" aria-hidden="true">
+            <path d="M0 183 126 62l83 89L336 34l148 166 89-98 187 148v80H0z" fill="#a7b696"/>
+            <path d="m126 62 47 45-43-17-24 27zm210-28 73 82-65-32-35 32zm178 166 59-65 27 51-40-24z" fill="#e1dfbf"/>
+            <path d="M0 210c115-34 185 40 305 3s192-43 278-2 119 44 177 12v107H0z" fill="#627b5f"/>
+            <path d="M0 260c100-27 173 24 293-1s203-45 289-5 118 43 178 9v67H0z" fill="#355642"/>
+            <path d="M0 296c151-20 253-12 373-22s240-23 387-3v59H0z" fill="#d6c493"/>
+            <path d="M0 314c169-28 343 16 510-7s187-13 250-7" fill="none" stroke="#fbf2dd" stroke-width="4" stroke-dasharray="18 15" opacity=".85"/>
+            <g transform="translate(365 190)">
+              <ellipse cx="112" cy="96" rx="133" ry="17" fill="#233c32" opacity=".35"/>
+              <path d="m20 70 14-40c4-11 15-18 27-18h105c14 0 28 7 36 19l26 39 24 8c7 2 12 9 12 16v15H12V84c0-7 2-11 8-14z" fill="#e4864f"/>
+              <path d="m52 25-11 37h69V22H62c-4 0-8 1-10 3zm70-3v40h99l-22-33c-4-5-10-7-16-7z" fill="#c9ddd2"/>
+              <path d="M17 70h233v20H16z" fill="#cf7044"/>
+              <circle cx="61" cy="101" r="22" fill="#26342d"/><circle cx="61" cy="101" r="10" fill="#e7ddc4"/>
+              <circle cx="201" cy="101" r="22" fill="#26342d"/><circle cx="201" cy="101" r="10" fill="#e7ddc4"/>
+              <path d="m24 76-9 5v9h15l4-13zm218 0 10 5v9h-16l-4-13z" fill="#f6d48e"/>
+            </g>
+          </svg>
+          <div class="route-stamp"><span>TAKE THE</span><strong>SCENIC<br>ROUTE</strong><span>↗ &nbsp; YOUR WAY</span></div>
+        </div>
+      </section>
+
+      <section class="game-shell hidden" aria-label="Toyota recommendation and payment selection">
+        <div class="stepper" aria-label="Game progress">
+          <div class="step active" data-step="1"><span>01</span> Pick your Toyota</div>
+          <div class="step-line"></div>
+          <div class="step" data-step="2"><span>02</span> Choose your plan</div>
+          <div class="step-line"></div>
+          <div class="step" data-step="3"><span>03</span> Hit the road</div>
+        </div>
+
+        <div class="setup-grid">
+          <div class="selection-panel">
+            <div class="section-heading">
+              <div><p class="eyebrow">YOUR TOYOTA SHORTLIST</p><h2>Pick your Toyota</h2></div>
+              <p class="heading-note">Choose a car to see the numbers<br>and take it for a spin.</p>
+            </div>
+            <p class="match-status" id="recommendation-count"></p>
+            <div class="no-matches hidden" id="no-matches"><strong>No Toyotas match those limits just yet.</strong><p>Edit your budget, savings, payment preference, or annual mileage to widen the list.</p><button class="text-button" id="edit-needs" type="button">Edit my needs</button></div>
+            <div class="car-grid" id="car-grid"></div>
+            <button class="text-button hidden" id="show-all" type="button"></button>
+            <div class="plan-heading">
+              <div><p class="eyebrow">THE MONEY PART</p><h2>How do you want to pay?</h2></div>
+            </div>
+            <div class="plan-grid" id="plan-grid"></div>
+            <div class="selection-footer">
+              <p class="assumption-note"><span>ⓘ</span> Estimates are for learning, not a finance offer.</p>
+              <button class="primary-button" id="start-drive" type="button">Take this car for a drive <span>→</span></button>
+            </div>
+          </div>
+          <aside class="money-panel" aria-live="polite">
+            <div class="money-top"><span>YOUR FINANCING SNAPSHOT</span><span class="budget-icon">◎</span></div>
+            <strong class="budget-amount" id="budget-amount">$—</strong>
+            <p class="money-caption" id="budget-caption">Based on the details you shared.</p>
+            <div class="money-divider"></div>
+            <div class="estimate-row"><span>Upfront cost</span><strong id="upfront-cost">—</strong></div>
+            <div class="estimate-row"><span>Est. monthly payment</span><strong id="monthly-cost">—</strong></div>
+            <div class="estimate-row"><span>Illustrative loan APR</span><strong id="credit-apr">—</strong></div>
+            <div class="estimate-row"><span>Annual driving</span><strong id="annual-mile-value">—</strong></div>
+            <div class="money-divider"></div>
+            <div class="fit-label"><span class="fit-dot"></span> GOOD TO KNOW</div>
+            <p class="fit-copy" id="fit-copy">Pick a car to see what makes it a fit.</p>
+            <div class="money-foot">Demo payment estimates · USD<br>APR is not a loan offer or credit decision.</div>
+          </aside>
+        </div>
+        <div class="compare-tray hidden" id="compare-tray"><span id="compare-names"></span><button class="primary-button" id="open-compare" type="button">Compare cars</button><button class="text-button" id="clear-compare" type="button">Clear</button></div>
+      </section>
+
+      <section class="drive-shell hidden" id="drive-shell" aria-live="polite">
+        <div class="drive-heading">
+          <div><p class="eyebrow" id="drive-eyebrow">TEST DRIVE 01 OF 03</p><h2 id="drive-title">The long way around.</h2></div>
+          <div class="drive-progress"><span id="drive-distance">0 / 3 drives</span><div class="progress-track"><i id="progress-fill"></i></div></div>
+        </div>
+        <div class="drive-game">
+          <canvas class="drive-canvas" id="drive-canvas" aria-label="Interactive driving game. Use left and right arrow keys or on-screen steering controls to steer."></canvas>
+          <div class="drive-hud"><span id="scene-location">MILE 08 · RIVER ROAD</span><span id="drive-percent">READY</span><span id="drive-speed">35 MPH</span><span id="drive-alert" aria-live="polite"></span><span id="road-trip-car">TOYOTA</span></div>
+          <div class="drive-overlay" id="drive-overlay">Choose a route to start your test drive</div>
+          <div class="drive-controls" aria-label="Driving controls">
+            <button class="steer-button" id="steer-left" type="button" aria-label="Steer left">←</button>
+            <div class="pedal-controls">
+              <button class="pedal-button" id="brake-button" type="button" aria-label="Brake">BRAKE</button>
+              <button class="pedal-button accelerate" id="accelerate-button" type="button" aria-label="Accelerate">GO</button>
+            </div>
+            <button class="steer-button" id="steer-right" type="button" aria-label="Steer right">→</button>
+          </div>
+          <p class="drive-instructions" id="drive-instructions">Steer ← → · accelerate ↑ / W · brake ↓ / S</p>
+        </div>
+        <div class="drive-content">
+          <div class="drive-story"><p class="eyebrow">ON THE ROAD</p><p id="drive-story"></p></div>
+          <div class="choice-panel"><p class="choice-prompt">What do you do?</p><div class="choice-list" id="choice-list"></div></div>
+          <div class="drive-status"><span>ROAD MONEY</span><strong id="road-money">$0</strong><span id="road-note">After your upfront cost</span></div>
+        </div>
+      </section>
+
+      <section class="ending-shell hidden" id="ending-shell" aria-live="polite">
+        <div class="ending-hero"><p class="eyebrow">YOUR TOYOTA RESULTS</p><h2 id="ending-title">Your Toyota journey.</h2><p id="ending-summary"></p><div class="ending-badge" id="ending-badge"></div></div>
+        <div class="ending-grid">
+          <div class="ending-card"><p class="eyebrow">YOUR DRIVE</p><h3>The numbers so far</h3><div id="ending-breakdown"></div></div>
+          <div class="ending-card what-if"><p class="eyebrow">WHAT IF YOU CHOSE DIFFERENTLY?</p><h3 id="whatif-title">A different road to consider</h3><p id="whatif-copy"></p><div class="whatif-savings" id="whatif-savings"></div></div>
+        </div>
+        <p class="disclaimer">*Illustrative demo estimates only, not Toyota pricing or an offer. Vehicle prices, fuel economy used for calculations, rates, lease factor, resale value, maintenance, and road-trip costs are assumptions. Loan estimate uses an example APR mapped to your optional credit score range; real lenders use many factors and may offer different terms. No credit report or score is obtained. Lease estimate assumes 36 months and 10,000 miles per year. Three-year comparison uses your estimated annual mileage and includes estimated fuel, maintenance, and resale/remaining loan balance for purchases. Taxes, title and fees are assumed at 7% of the price for loan and cash purchases; prices marked ≈ are estimates (including a $1,500 allowance when you ask for AWD on models where it is optional), and Toyota’s delivery fee is not included. Confirm current prices, specifications, safety equipment, and terms on the official Toyota pages linked above.</p>
+        <div class="ending-actions"><button class="primary-button" id="copy-results" type="button">Copy my results</button><button class="text-button" id="save-results" type="button">Save as text file</button><button class="text-button" id="print-results" type="button">Print / save as PDF</button><span id="save-status" role="status"></span></div>
+        <button class="primary-button replay-button" id="replay-button" type="button">Try another Toyota <span>↗</span></button>
+      </section>
+      <dialog class="compare-dialog" id="compare-dialog" aria-label="Compare Toyotas">
+        <div class="compare-head"><h2>Compare Toyotas</h2><div><button class="text-button" id="copy-compare" type="button">Copy comparison</button><span id="compare-status" role="status"></span><button class="primary-button" id="close-compare" type="button">Close</button></div></div>
+        <p class="compare-note">Highlighted cells are the best value in that row. *Illustrative demo estimates, not a Toyota offer.</p>
+        <div class="compare-scroll" id="compare-table"></div>
+      </dialog>
+    </main>
+    <footer><span>toyota match</span><span>A drive toward a smarter Toyota decision. Independent demo, not affiliated with Toyota Motor Corporation.</span></footer>
+  </body>
+</html>
