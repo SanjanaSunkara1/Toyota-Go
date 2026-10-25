@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
-const context = {};
+const context = {window:{}};
 const game = fs.readFileSync("game.js", "utf8").split('document.querySelector("#signup-tab").addEventListener')[0];
 vm.runInNewContext(
   fs.readFileSync("catalog.js", "utf8") + "\n" + fs.readFileSync("cars.js", "utf8") +

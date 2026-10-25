@@ -32,3 +32,9 @@ The user's request to compare **real insurance plans** is separate from the earl
 **Why:** The user explicitly requested real insurance comparisons and a prompt after vehicle selection.
 
 **How to apply:** Never invent insurer premiums or present sample rates as live quotes. Use actual customer-supplied offers or an authorized quote-provider connection, clearly distinguishing unverified entered quotes from provider-returned rates and binding policies.
+
+The user explicitly chose a **Nessie sandbox demo** for the banking, affordability, financing-rate and down-payment feature, rather than real banking/lending services.
+
+**Why:** After the difference was explained, the user selected “Build a Nessie sandbox demo.”
+
+**How to apply:** Keep this feature fictional/test-only. Neither sample banking records nor Nessie API sandbox records authorize claims of live bank access, actual TFS preapproval, or real-money movement. A production banking/lending feature would require a new scope decision and authorized providers.

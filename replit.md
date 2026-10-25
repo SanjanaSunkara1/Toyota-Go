@@ -44,8 +44,23 @@ use external Google/Toyota hosts; the branding image and logo are local.
   used for educational scores, not presented as the customer's actual budget.
 - Paint preference does not guarantee model/trim/dealer color availability.
 - The model and all assumptions/methodology are visible in the comparison dashboard.
+- Nessie affordability is sandbox-only: built-in fictional accounts work without
+  credentials; optional server-side Nessie API mode uses NESSIE_API_KEY.
+  Never describe it as live bank access, TFS preapproval, or real money movement.
+  Down-payment tests require review and explicit confirmation, move only between
+  same-customer fictional checking/savings accounts, and use session idempotency.
+  Sample balances and transfer receipts are ephemeral (two hours/server lifetime).
+  No genuine TFS holding account or lender integration exists.
+- Cashflow averages 90 observed days over three 30-day months; deposits are an
+  income proxy. Missing loan/bill data withholds APR/budget suggestions. Optional
+  gross income affects the debt ratio only. Applying a budget or APR is explicit
+  and must preserve at least two exact matches without relaxing other filters.
 
 ## Verify
+
+`python3 -m unittest discover -s tests -p 'test_*.py'`
+
+`node --test tests/*.test.cjs`
 
 `node --test tests/deal-model.test.cjs`
 

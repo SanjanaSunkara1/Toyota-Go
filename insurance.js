@@ -119,6 +119,7 @@
     render,
     prompt(car) { if (!asked.has(car.id)) open(car,true); },
     beforeDrive(action) { if (asked.has(state.car.id)) action(); else open(state.car,true,action); },
+    monthlyForCar(carId) { const quote = chosen(carId); return quote ? monthly(quote) : null; },
     reset() { quotes = []; selected = {}; asked.clear(); continuation = null; if (dialog.open) dialog.close(); render(); },
     rows() { return [
       ["Insurance quote (customer entered)", car => { const quote = chosen(car.id); return quote ? `${escape(quote.insurer)} · ${escape(quote.label)} · ${money(monthly(quote))}/mo equivalent` : "No quote supplied"; }],

@@ -93,6 +93,8 @@ function upfrontCost(car, plan) {
 }
 
 function illustrativeApr() {
+  const sandbox = window.NessieFinance?.aprForProfile(state.profile);
+  if (Number.isFinite(sandbox) && sandbox > 0) return sandbox;
   const rates = {
     under580: 0.145,
     "580-669": 0.105,
@@ -294,7 +296,48 @@ function renderSetup() {
   document.querySelector("#fit-copy").textContent = `${state.car.fit} ${state.profile.awd && state.car.awd ? "Matches your interest in available AWD." : ""}`;
   renderDealInsights();
   window.ToyotaInsurance?.render();
+  window.NessieFinance?.render();
 }
+
+// Apply sandbox assumptions only after explicit consent, retaining real filters.
+window.setSandboxFinance = function setSandboxFinance(enabled, budget = null) {
+  if (!state.profile) return {ok:false, message:"Find your Toyota matches first, then apply a sandbox financing scenario."};
+  const profile = {...state.profile, sandboxFinance: Boolean(enabled),
+                   skippedQuestions:[...(state.profile.skippedQuestions || [])]};
+  if (enabled && !Number.isFinite(window.NessieFinance?.aprForProfile(profile))) {
+    return {ok:false, message:"Analyze complete sandbox records with an APR scenario before applying it."};
+  }
+  if (budget !== null) {
+    if (!Number.isFinite(budget) || budget <= 0) return {ok:false,message:"No positive payment budget is available."};
+    profile.monthlyCap = Math.floor(Math.min(2000, budget) / 25) * 25;
+    if (profile.monthlyCap <= 0) return {ok:false,message:"This budget is below the minimum usable payment step."};
+    profile.skippedQuestions = profile.skippedQuestions.filter(key => key !== "monthly-cap");
+  }
+  const ids = new Set(matchingVehicles(profile).map(car => car.id));
+  if (ids.size < 2) {
+    if (!enabled && budget === null) {
+      state.profile.sandboxFinance = false;
+      showNeeds();
+      window.ResultsFilters?.reject();
+      return {ok:true,message:"The sandbox APR is off. Broaden your quiz preferences before viewing new matches."};
+    }
+    return {ok:false,message:"These assumptions leave fewer than two matches. Broaden your vehicle or budget preferences; no filters were silently relaxed."};
+  }
+  state.profile = profile;
+  ToyotaWizard.setSkipped(profile.skippedQuestions);
+  if (budget !== null) document.querySelector("#monthly-cap").value = profile.monthlyCap;
+  state.allMatches = cars.filter(car => ids.has(car.id)).sort((a,b) => matchScore(b)-matchScore(a));
+  state.matches = [...state.allMatches];
+  state.compare = state.compare.filter(id => ids.has(id));
+  if (!ids.has(state.car.id)) state.car = state.matches[0];
+  if (!planIsAffordable(state.car,state.plan)) state.plan = bestPlan(state.car);
+  document.querySelector("#recommendation-count").textContent = `${ids.size} possible matches · based on your answers`;
+  renderSetup();
+  document.dispatchEvent(new Event("toyota:matches"));
+  return {ok:true,message:budget !== null
+    ? `Applied a $${profile.monthlyCap}/month cap, rounded down to the supported $25 step. Rates remain illustrative, not pre-approved.`
+    : `Sandbox APR scenario ${enabled ? "applied" : "removed"}. No credit decision or TFS offer was made.`};
+};
 
 function syncShowAll() {
   const button = document.querySelector("#show-all");
@@ -315,6 +358,7 @@ function readNeedsForm() {
   const preferredPlan = document.querySelector("#payment-preference").value;
   const optionalNumber = id => document.querySelector(`#${id}`).value === "" ? null : Number(document.querySelector(`#${id}`).value);
   const profile = {
+    sandboxFinance: Boolean(state.profile?.sandboxFinance),
     maxPrice,
     monthlyCap,
     totalFunds,
@@ -438,7 +482,7 @@ function startDrive() {
   document.querySelector(".intro").classList.add("hidden");
   document.querySelector("#edit-preferences").classList.add("hidden");
   window.ResultsFilters?.hide();
-  ["#deal-insights", "#insurance-panel", "#compare-tray"].forEach(id => document.querySelector(id)?.classList.add("hidden"));
+  ["#deal-insights", "#insurance-panel", "#compare-tray", "#finance-summary"].forEach(id => document.querySelector(id)?.classList.add("hidden"));
   document.querySelector("#drive-shell").classList.remove("hidden");
   document.querySelector('[data-step="1"]').classList.remove("active");
   document.querySelector('[data-step="1"]').classList.add("done");
@@ -1084,6 +1128,7 @@ function saveResults() {
 
 function showNeeds() {
   window.ResultsFilters?.hide();
+  document.querySelector("#finance-summary")?.classList.add("hidden");
   cancelAnimationFrame(state.animationFrame);
   state.drive = null;
   document.querySelector("#auth-shell").classList.add("hidden");
@@ -1134,6 +1179,7 @@ function resetGame() {
   document.querySelector("#needs-form").reset();
   ToyotaWizard?.reset();
   window.ToyotaInsurance?.reset();
+  window.NessieFinance?.reset();
   window.ResultsFilters?.hide();
   setAuthMode("signup");
   document.querySelector("#auth-shell").classList.remove("hidden");
